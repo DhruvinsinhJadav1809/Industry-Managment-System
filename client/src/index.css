@@ -1,0 +1,117 @@
+@import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap");
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --font-display: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --font-body: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+
+  /* Steel / blueprint palette */
+  --color-steel-50: #f4f7f9;
+  --color-steel-100: #e6edf1;
+  --color-steel-200: #cddae1;
+  --color-steel-300: #a7bdc9;
+  --color-steel-400: #7999ab;
+  --color-steel-500: #587c91;
+  --color-steel-600: #446277;
+  --color-steel-700: #384f60;
+  --color-steel-800: #1c3f5f;
+  --color-steel-850: #16324c;
+  --color-steel-900: #0e2a44;
+  --color-steel-950: #0a1c2e;
+
+  /* Amber / safety accent */
+  --color-amber-300: #f6c377;
+  --color-amber-400: #f0a93a;
+  --color-amber-500: #e0932a;
+  --color-amber-600: #c17a1d;
+
+  /* Signal green (status ok) */
+  --color-signal-400: #4fae7d;
+  --color-signal-500: #2f855a;
+}
+
+html {
+  color-scheme: light;
+}
+html.dark {
+  color-scheme: dark;
+}
+
+body {
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Blueprint grid backdrop, intensity controlled per-mode */
+.blueprint-grid {
+  background-image:
+    linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+
+:root {
+  --grid-line: rgba(28, 63, 95, 0.08);
+}
+.dark {
+  --grid-line: rgba(127, 168, 201, 0.08);
+}
+
+/* Corner bracket frame, technical-drawing style */
+.corner-frame {
+  position: relative;
+}
+.corner-frame::before,
+.corner-frame::after {
+  content: "";
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  border-color: var(--color-amber-400);
+  opacity: 0.9;
+}
+.corner-frame::before {
+  top: -1px;
+  left: -1px;
+  border-top: 2px solid;
+  border-left: 2px solid;
+}
+.corner-frame::after {
+  bottom: -1px;
+  right: -1px;
+  border-bottom: 2px solid;
+  border-right: 2px solid;
+}
+
+/* Focus ring, visible + on-brand */
+:focus-visible {
+  outline: 2px solid var(--color-amber-400);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+/* Scrollbar - subtle industrial */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-steel-300);
+  border-radius: 999px;
+}
+.dark ::-webkit-scrollbar-thumb {
+  background: var(--color-steel-700);
+}
