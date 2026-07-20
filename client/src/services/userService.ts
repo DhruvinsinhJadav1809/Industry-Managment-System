@@ -19,13 +19,13 @@ export const userService = {
   },
 
   /**
-   * PATCH /users/:id — endpoint assumed, update once the real contract
+   * PUT /users/:id — endpoint assumed, update once the real contract
    * is confirmed. Only the fields below are sent.
    */
   update: async (id: string, payload: UpdateUserPayload) => {
-    const { data } = await apiClient.patch<ApiResponse<unknown>>(
+    const { data } = await apiClient.put<ApiResponse<unknown>>(
       `/users/${id}`,
-      payload
+      payload,
     );
     return data;
   },
@@ -35,7 +35,7 @@ export const userService = {
    */
   remove: async (id: string) => {
     const { data } = await apiClient.delete<ApiResponse<unknown>>(
-      `/users/${id}`
+      `/users/${id}`,
     );
     return data;
   },

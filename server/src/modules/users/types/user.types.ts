@@ -1,4 +1,4 @@
-import { HydratedDocument } from "mongoose";
+import { HydratedDocument, Types } from "mongoose";
 
 export interface IUser {
   fullName: string;
@@ -10,5 +10,11 @@ export interface IUser {
   isDeleted: boolean;
   createdAt: Date;
   updatedAt: Date;
+
+  createdBy?: Types.ObjectId;
+  updatedBy?: Types.ObjectId;
+
+  deletedAt?: Date;
+  deletedBy?: Types.ObjectId;
 }
 export type IUserDocument = HydratedDocument<IUser>;
