@@ -14,6 +14,9 @@ import { UpdateUserDto } from "../dto/requests/update-user.dto";
 import { NotFoundError } from "../../../shared/errors/not-found.error";
 import { BadRequestError } from "../../../shared/errors/bad-request.error";
 import { ForbiddenError } from "../../../shared/errors/forbidden.error";
+import { mailService } from "../../../shared/email/mail.service";
+import { logger } from "../../../shared/helpers/logger";
+import { buildWelcomeTemplate } from "../../../shared/email/templates/welcome-email.template";
 
 export const createUser = async (data: CreateUserDto) => {
   const existingUser = await UserModel.findOne({
@@ -33,8 +36,23 @@ export const createUser = async (data: CreateUserDto) => {
   const user = await UserModel.create({
     ...data,
     password: hashedPassword,
-    roleId: data.roleId ?? UserRole.Customer,
+    roleId: data.roleId ?? UserRole.Employee,
   });
+  try {
+    const loginLink = `${process.env.CLIENT_URL}/login`;
+    const html = buildWelcomeTemplate({
+      userName: user.fullName,
+      loginLink: loginLink,
+    });
+
+    await mailService.send({
+      to: user.email,
+      subject: "Welcome to Industry Management System",
+      html,
+    });
+  } catch (error) {
+    logger.error(`Failed to send welcome email: ${error}`);
+  }
   return toUserResponseDto(user);
 };
 

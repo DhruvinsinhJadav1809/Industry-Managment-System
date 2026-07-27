@@ -7,6 +7,7 @@ import { UserTable } from "../components/users/UserTable";
 import { AppLayout } from "../layouts/AppLayout";
 import { ROLE_OPTIONS } from "../constants/roles";
 import { useAuth } from "../context/AuthContext";
+import { useToast } from "../context/ToastContext";
 import { useDebouncedValue } from "../hooks/useDebouncedValue";
 import { userService } from "../services/userService";
 import type { ApiErrorShape } from "../lib/axios";
@@ -16,6 +17,7 @@ const PAGE_SIZE = 10;
 
 export default function Users() {
   const { user: currentUser } = useAuth();
+  const toast = useToast();
 
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
@@ -32,7 +34,6 @@ export default function Users() {
   const [editingUser, setEditingUser] = useState<UserListItem | null>(null);
   const [deletingUser, setDeletingUser] = useState<UserListItem | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [actionError, setActionError] = useState<string | null>(null);
 
   const debouncedSearch = useDebouncedValue(search, 350);
 
@@ -85,13 +86,13 @@ export default function Users() {
   const handleDeleteConfirm = async () => {
     if (!deletingUser) return;
     setIsDeleting(true);
-    setActionError(null);
     try {
       await userService.remove(deletingUser.id);
+      toast.success(`${deletingUser.fullName} was deleted.`);
       setDeletingUser(null);
       fetchUsers();
     } catch (err) {
-      setActionError((err as ApiErrorShape).message);
+      toast.error((err as ApiErrorShape).message);
     } finally {
       setIsDeleting(false);
     }
@@ -113,12 +114,6 @@ export default function Users() {
         </div>
       </div>
 
-      {actionError && (
-        <div className="mb-4">
-          <Alert variant="error">{actionError}</Alert>
-        </div>
-      )}
-
       <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-end">
         <div className="flex-1">
           <label className="mb-1.5 block font-body text-xs font-semibold uppercase tracking-wider text-steel-600 dark:text-steel-400">
@@ -133,7 +128,7 @@ export default function Users() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search by name or email"
-              className="w-full rounded-md border border-steel-200 bg-white/70 py-2.5 pl-10 pr-3.5 text-sm text-steel-900 outline-none transition-colors focus:border-steel-500 dark:border-steel-700 dark:bg-steel-900/40 dark:text-steel-50 dark:focus:border-amber-400/70"
+              className="w-full rounded-md border border-steel-200 bg-white py-2.5 pl-10 pr-3.5 text-sm text-steel-900 outline-none transition-colors hover:border-steel-300 focus:border-steel-500 dark:border-steel-700 dark:bg-steel-900 dark:text-steel-50 dark:hover:border-steel-600 dark:focus:border-amber-400/70"
             />
           </div>
         </div>
@@ -181,6 +176,7 @@ export default function Users() {
         onClose={() => setEditingUser(null)}
         onSaved={() => {
           setEditingUser(null);
+          toast.success("User updated.");
           fetchUsers();
         }}
       />

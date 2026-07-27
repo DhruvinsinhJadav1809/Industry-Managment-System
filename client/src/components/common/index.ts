@@ -12,3 +12,4 @@ export { Badge } from "./Badge";
 export { Pagination } from "./Pagination";
 export { StatusPage } from "./StatusPage";
 export { ErrorBoundary } from "./ErrorBoundary";
+export { ToastViewport } from "./ToastViewport";

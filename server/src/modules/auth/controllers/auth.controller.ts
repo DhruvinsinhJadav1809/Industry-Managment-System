@@ -8,3 +8,24 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
 
   return res.status(200).json(successResponse(response, "Login successful."));
 });
+
+export const forgotPassword = asyncHandler(async (req, res) => {
+  await authService.forgotPassword(req.body);
+
+  return res
+    .status(200)
+    .json(
+      successResponse(
+        null,
+        "If an account exists, a password reset link has been sent.",
+      ),
+    );
+});
+
+export const resetPassword = asyncHandler(async (req, res) => {
+  await authService.resetPassword(req.body);
+
+  return res
+    .status(200)
+    .json(successResponse(null, "Password reset successfully."));
+});

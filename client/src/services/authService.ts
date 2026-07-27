@@ -1,10 +1,12 @@
 import { apiClient } from "../lib/axios";
 import type {
   ApiResponse,
+  ForgotPasswordPayload,
   LoginPayload,
   LoginResult,
   RegisterPayload,
   RegisteredUser,
+  ResetPasswordPayload,
 } from "../types/auth";
 
 export const authService = {
@@ -15,7 +17,7 @@ export const authService = {
   register: async (payload: RegisterPayload) => {
     const { data } = await apiClient.post<ApiResponse<RegisteredUser>>(
       "/users",
-      payload
+      payload,
     );
     return data;
   },
@@ -26,7 +28,25 @@ export const authService = {
   login: async (payload: LoginPayload) => {
     const { data } = await apiClient.post<ApiResponse<LoginResult>>(
       "/auth/login",
-      payload
+      payload,
+    );
+    return data;
+  },
+
+  /** POST /auth/forgot-password — sends a reset link to the given email. */
+  forgotPassword: async (payload: ForgotPasswordPayload) => {
+    const { data } = await apiClient.post<ApiResponse<unknown>>(
+      "/auth/forgot-password",
+      payload,
+    );
+    return data;
+  },
+
+  /** POST /auth/reset-password — token from the emailed reset link. */
+  resetPassword: async (payload: ResetPasswordPayload) => {
+    const { data } = await apiClient.post<ApiResponse<unknown>>(
+      "/auth/reset-password",
+      payload,
     );
     return data;
   },

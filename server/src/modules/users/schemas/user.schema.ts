@@ -46,6 +46,16 @@ const userSchema = new Schema<IUser>(
       type: Boolean,
       default: false,
     },
+
+    resetPasswordToken: {
+      type: String,
+      default: null,
+    },
+
+    resetPasswordExpiresAt: {
+      type: Date,
+      default: null,
+    },
     createdBy: {
       type: Schema.Types.ObjectId,
       ref: "User",

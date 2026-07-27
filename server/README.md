@@ -1,10 +1,10 @@
 # Industry Management System (IMS) - Backend
 
-Backend API for the **Industry Management System (IMS)** built with **Node.js**, **Express**, **TypeScript**, and **MongoDB** following a scalable and modular architecture.
+Backend API for the **Industry Management System (IMS)** built with **Node.js**, **Express.js**, **TypeScript**, and **MongoDB**, following a scalable, modular, and production-ready architecture.
 
 ---
 
-## 🚀 Technology Stack
+# 🚀 Technology Stack
 
 - Node.js
 - Express.js
@@ -12,27 +12,30 @@ Backend API for the **Industry Management System (IMS)** built with **Node.js**,
 - MongoDB
 - Mongoose
 - Zod
-- Swagger UI
+- JWT Authentication
 - bcrypt
+- Nodemailer
+- Swagger UI
 
 ---
 
-## 📁 Project Structure
+# 📁 Project Structure
 
 ```text
 src
-├── config/             # Database & Swagger configuration
-├── middleware/         # Validation & Error middleware
+├── config/
+├── middleware/
 ├── modules/
-│   └── users/
-│       ├── controllers/
-│       ├── dto/
-│       ├── routes/
-│       ├── schemas/
-│       ├── services/
-│       ├── types/
-│       └── validations/
+│   ├── auth/
+│   ├── users/
+│   ├── departments/
+│   └── products/
 ├── shared/
+│   ├── email/
+│   │   ├── interfaces/
+│   │   ├── templates/
+│   │   ├── mail.service.ts
+│   │   └── transporter.ts
 │   ├── helpers/
 │   ├── responses/
 │   └── errors/
@@ -42,9 +45,7 @@ src
 
 ---
 
-## ⚙️ Installation
-
-Clone the repository and install dependencies.
+# ⚙️ Installation
 
 ```bash
 npm install
@@ -52,7 +53,7 @@ npm install
 
 ---
 
-## ▶️ Running the Application
+# ▶️ Running the Application
 
 Development
 
@@ -60,7 +61,7 @@ Development
 npm run dev
 ```
 
-Production Build
+Production
 
 ```bash
 npm run build
@@ -69,29 +70,35 @@ npm start
 
 ---
 
-## 🌍 Environment Variables
+# 🌍 Environment Variables
 
-Create a `.env` file in the project root.
-
-Example:
+Create a `.env` file.
 
 ```env
 PORT=5000
 
-MONGODB_URI=mongodb://localhost:27017/industry-management-system
+MONGODB_URI=
 
-CLIENT_URL=http://localhost:5173
+CLIENT_URL=
 
-JWT_SECRET=your-secret-key
+JWT_SECRET=
+JWT_EXPIRES_IN=
 
 BCRYPT_SALT_ROUNDS=10
+
+MAIL_HOST=
+MAIL_PORT=
+MAIL_USER=
+MAIL_PASSWORD=
+MAIL_FROM=
+
 ```
 
 ---
 
-## 📚 API Documentation
+# 📚 API Documentation
 
-Swagger UI is available at:
+Swagger
 
 ```
 http://localhost:5000/api/docs
@@ -99,108 +106,241 @@ http://localhost:5000/api/docs
 
 ---
 
-## ✅ Features Implemented
+# ✅ Features Implemented
 
-### Project Setup
+## Project Setup
 
 - Express + TypeScript
 - Environment Configuration
-- MongoDB Connection using Mongoose
+- MongoDB Connection
 - Modular Folder Structure
+- Swagger Documentation
 
-### User Module
+---
 
-- Create User API
-- Email Duplicate Validation
+## Authentication
+
+- User Login
+- JWT Authentication
+- Role-Based Authorization
+- Forgot Password
+- Reset Password
 - Password Hashing using bcrypt
-- Response DTO
-- Zod Request Validation
+- Secure Reset Token Generation
+- SHA-256 Token Hashing
+- Reset Token Expiration
+- Protection against User Enumeration
 
-### Error Handling
+---
+
+## User Module
+
+- Create User
+- Get Users (Pagination & Search)
+- Get User By Id
+- Update User
+- Soft Delete User
+- Duplicate Email Validation
+- Response DTOs
+- Zod Validation
+
+---
+
+## Department Module
+
+- Create Department
+- Assign Manager
+- Get Departments
+- Pagination
+- Search
+- Get Department By Id
+- Update Department
+- Soft Delete Department
+- Manager Population using Mongoose Populate
+
+---
+
+## Product Module
+
+- Create Product
+- Get Products
+- Get Product By Id
+- Update Product
+- Soft Delete Product
+- Department Reference
+- Product Type Support
+
+---
+
+## Email Service
+
+Reusable email infrastructure.
+
+Supported emails:
+
+- Welcome Email
+- Forgot Password Email
+
+Features:
+
+- Reusable Mail Service
+- HTML Email Templates
+- SMTP Connection Verification
+- Mailtrap Support
+
+---
+
+## Error Handling
 
 - Global Error Middleware
 - Custom Error Classes
 - Standard API Response
 - Async Handler
 
-### Developer Tools
+---
 
-- Swagger Configuration
-- TypeScript Support
+# 📌 API Endpoints
+
+## Authentication
+
+| Method | Endpoint                    | Description     |
+| ------ | --------------------------- | --------------- |
+| POST   | `/api/auth/login`           | Login           |
+| POST   | `/api/auth/forgot-password` | Forgot Password |
+| POST   | `/api/auth/reset-password`  | Reset Password  |
 
 ---
 
-## 📌 API Endpoints
+## Users
 
-### User
-
-| Method | Endpoint     | Description       |
-| ------ | ------------ | ----------------- |
-| POST   | `/api/users` | Create a new user |
-
----
-
-## 📦 Available Scripts
-
-| Command         | Description            |
-| --------------- | ---------------------- |
-| `npm run dev`   | Run development server |
-| `npm run build` | Build the application  |
-| `npm start`     | Run production build   |
+| Method | Endpoint         |
+| ------ | ---------------- |
+| POST   | `/api/users`     |
+| GET    | `/api/users`     |
+| GET    | `/api/users/:id` |
+| PUT    | `/api/users/:id` |
+| DELETE | `/api/users/:id` |
 
 ---
 
-## 🏗️ Architecture
+## Departments
 
-The project follows a layered architecture.
+| Method | Endpoint               |
+| ------ | ---------------------- |
+| POST   | `/api/departments`     |
+| GET    | `/api/departments`     |
+| GET    | `/api/departments/:id` |
+| PUT    | `/api/departments/:id` |
+| DELETE | `/api/departments/:id` |
+
+---
+
+## Products
+
+| Method | Endpoint            |
+| ------ | ------------------- |
+| POST   | `/api/products`     |
+| GET    | `/api/products`     |
+| GET    | `/api/products/:id` |
+| PUT    | `/api/products/:id` |
+| DELETE | `/api/products/:id` |
+
+---
+
+# 📦 Available Scripts
+
+| Command       | Description        |
+| ------------- | ------------------ |
+| npm run dev   | Development Server |
+| npm run build | Build Application  |
+| npm start     | Production Server  |
+
+---
+
+# 🏗️ Architecture
 
 ```text
-Request
-   │
+HTTP Request
+      │
+      ▼
 Routes
-   │
+      │
+      ▼
+Validation Middleware
+      │
+      ▼
+Authentication
+      │
+      ▼
+Authorization
+      │
+      ▼
 Controller
-   │
+      │
+      ▼
 Service
-   │
+      │
+      ▼
 Database
-   │
-Response
+      │
+      ▼
+Response Helper
+      │
+      ▼
+HTTP Response
 ```
 
 Cross-cutting concerns:
 
 - Validation Middleware
+- Authentication Middleware
+- Authorization Middleware
 - Async Handler
-- Error Middleware
+- Global Error Middleware
 - Standard API Response
+- Email Service
 
 ---
 
-## 🎯 Sprint Progress
+# 🎯 Sprint Progress
 
-### ✅ Sprint 1
+## ✅ Sprint 1
 
-- Project Initialization
-- MongoDB Configuration
-- User Registration API
-- Request Validation
-- Password Hashing
-- Duplicate Email Validation
-- Global Error Handling
-- Async Handler
-- Swagger Configuration
+- Project Setup
+- MongoDB
+- User Registration
+- JWT Authentication
+- Swagger
+- Error Handling
+
+## ✅ Sprint 2
+
+- User CRUD
+- Department CRUD
+- Product CRUD
+- Pagination & Search
+- Soft Delete
+- Manager Population
+
+## ✅ Sprint 3
+
+- Forgot Password
+- Reset Password
+- Welcome Email
+- SMTP Integration
+- Reusable Email Service
 
 ---
 
-## 👨‍💻 Development Guidelines
+# 👨‍💻 Development Guidelines
 
-- Follow the existing project structure.
-- Use DTOs for request and response models.
-- Validate all incoming requests using Zod.
-- Handle exceptions using custom error classes.
-- Return responses using the standard API response helper.
-- Use the Async Handler for all controllers.
+- Follow the existing modular architecture.
 - Keep business logic inside services.
-
----
+- Use DTOs for request and response models.
+- Validate requests using Zod.
+- Return responses using the standard response helper.
+- Handle exceptions using custom error classes.
+- Use Async Handler for all controllers.
+- Follow soft delete instead of permanent delete.
+- Use Mongoose Populate for referenced documents.
+- Reuse the shared Email Service for all outgoing emails.

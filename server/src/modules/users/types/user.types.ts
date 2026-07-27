@@ -16,5 +16,9 @@ export interface IUser {
 
   deletedAt?: Date;
   deletedBy?: Types.ObjectId;
+
+  resetPasswordToken?: string | null;
+
+  resetPasswordExpiresAt?: Date | null;
 }
 export type IUserDocument = HydratedDocument<IUser>;

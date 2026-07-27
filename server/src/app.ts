@@ -7,6 +7,8 @@ import swaggerUi from "swagger-ui-express";
 import { swaggerSpec } from "./config/swagger";
 import cors from "cors";
 import authRoutes from "./modules/auth/routes/auth.routes";
+import departmentRotes from "./modules/departments/routes/department.routes";
+import productRoutes from "./modules/products/routes/product.routes";
 const app = express();
 //CORS
 app.use(
@@ -24,9 +26,12 @@ app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 // API Routes
 app.use("/api/users", userRoutes);
 app.use("/api/auth", authRoutes);
-
+app.use("/api/departments", departmentRotes);
+app.use("/api/products", productRoutes);
 // Error Middleware (Always Last)
 app.use(errorMiddleware);
+
+export default app;
 
 // Default Route
 // app.get("/", (req, res) => {
@@ -47,5 +52,3 @@ app.use(errorMiddleware);
 //     ),
 //   );
 // });
-
-export default app;

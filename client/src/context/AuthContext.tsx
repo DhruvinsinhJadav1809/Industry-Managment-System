@@ -5,10 +5,8 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { TOKEN_STORAGE_KEY } from "../lib/axios";
+import { TOKEN_STORAGE_KEY, USER_STORAGE_KEY } from "../constants/storageKeys";
 import type { AuthUser } from "../types/auth";
-
-const USER_STORAGE_KEY = "ims-user";
 
 interface AuthContextValue {
   user: AuthUser | null;

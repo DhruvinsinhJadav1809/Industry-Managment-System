@@ -19,7 +19,7 @@ export const userService = {
   },
 
   /**
-   * PUT /users/:id — endpoint assumed, update once the real contract
+   * Put /users/:id — endpoint assumed, update once the real contract
    * is confirmed. Only the fields below are sent.
    */
   update: async (id: string, payload: UpdateUserPayload) => {

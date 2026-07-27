@@ -39,13 +39,13 @@ export function Button({
   return (
     <button
       className={clsx(
-        "inline-flex items-center justify-center gap-2 rounded-md px-4 py-2.5 cursor-pointer",
+        "inline-flex items-center justify-center gap-2 rounded-md px-4 py-2.5",
         "font-body text-sm font-semibold tracking-wide",
         "transition-colors duration-150 ease-out",
         "disabled:cursor-not-allowed disabled:opacity-60",
         fullWidth && "w-full",
         variantClasses[variant],
-        className,
+        className
       )}
       disabled={disabled || isLoading}
       {...rest}

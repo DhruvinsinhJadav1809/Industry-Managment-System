@@ -38,15 +38,23 @@ export function Select({
           id={selectId}
           {...rest}
           className={clsx(
-            "w-full appearance-none rounded-md border border-steel-200 bg-white/70 py-2.5 pl-3.5 pr-9 text-sm text-steel-900 outline-none",
-            "transition-colors duration-150 focus:border-steel-500",
-            "dark:border-steel-700 dark:bg-steel-900/40 dark:text-steel-50 dark:focus:border-amber-400/70",
+            "w-full appearance-none rounded-md border border-steel-200 bg-white py-2.5 pl-3.5 pr-9 text-sm text-steel-900 outline-none",
+            "transition-colors duration-150 hover:border-steel-300 focus:border-steel-500",
+            "dark:border-steel-700 dark:bg-steel-900 dark:text-steel-50 dark:hover:border-steel-600 dark:focus:border-amber-400/70",
             className
           )}
         >
-          {placeholder && <option value="">{placeholder}</option>}
+          {placeholder && (
+            <option value="" className="bg-white text-steel-900 dark:bg-steel-900 dark:text-steel-50">
+              {placeholder}
+            </option>
+          )}
           {options.map((opt) => (
-            <option key={opt.value} value={opt.value}>
+            <option
+              key={opt.value}
+              value={opt.value}
+              className="bg-white text-steel-900 dark:bg-steel-900 dark:text-steel-50"
+            >
               {opt.label}
             </option>
           ))}

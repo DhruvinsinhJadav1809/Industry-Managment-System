@@ -1,7 +1,12 @@
 import { Formik, Form } from "formik";
 import { LogIn, Mail } from "lucide-react";
 import { useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import {
+  Link,
+  useLocation,
+  useNavigate,
+  useSearchParams,
+} from "react-router-dom";
 import {
   Alert,
   AuthLayout,
@@ -21,18 +26,23 @@ import type { ApiErrorShape } from "../lib/axios";
 export default function Login() {
   const navigate = useNavigate();
   const location = useLocation();
+
+  const [searchParams] = useSearchParams();
+
+  const passwordReset = searchParams.get("passwordReset") === "1";
   const { login } = useAuth();
   const [apiError, setApiError] = useState<string | null>(null);
 
+  const sessionExpired = searchParams.get("sessionExpired") === "1";
+
   // Arrives here after a fresh registration, so the email is pre-filled.
   const registeredEmail =
-    (location.state as { registeredEmail?: string } | null)
-      ?.registeredEmail ?? "";
+    (location.state as { registeredEmail?: string } | null)?.registeredEmail ??
+    "";
 
   // If ProtectedRoute bounced an unauthenticated visit here, send them
   // back to where they were headed once they sign in.
-  const redirectTo =
-    (location.state as { from?: string } | null)?.from ?? "/";
+  const redirectTo = (location.state as { from?: string } | null)?.from ?? "/";
 
   const initialValues: LoginFormValues = {
     email: registeredEmail,
@@ -41,7 +51,7 @@ export default function Login() {
 
   const handleSubmit = async (
     values: LoginFormValues,
-    helpers: { setSubmitting: (v: boolean) => void }
+    helpers: { setSubmitting: (v: boolean) => void },
   ) => {
     setApiError(null);
     try {
@@ -76,8 +86,20 @@ export default function Login() {
     >
       {registeredEmail && (
         <div className="mb-5">
+          <Alert variant="success">Account created. Sign in to continue.</Alert>
+        </div>
+      )}
+      {!registeredEmail && passwordReset && (
+        <div className="mb-5">
           <Alert variant="success">
-            Account created. Sign in to continue.
+            Password reset. Sign in with your new password.
+          </Alert>
+        </div>
+      )}
+      {!registeredEmail && sessionExpired && (
+        <div className="mb-5">
+          <Alert variant="info">
+            Your session has expired. Sign in again to continue.
           </Alert>
         </div>
       )}
