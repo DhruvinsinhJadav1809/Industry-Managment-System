@@ -2,7 +2,12 @@ import { Formik, Form } from "formik";
 import { KeyRound, ShieldAlert } from "lucide-react";
 import { useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import { Alert, AuthLayout, Button, PasswordField } from "../components/common";
+import {
+  Alert,
+  AuthLayout,
+  Button,
+  PasswordField,
+} from "../components/common";
 import {
   resetPasswordSchema,
   type ResetPasswordFormValues,
@@ -24,7 +29,7 @@ export default function ResetPassword() {
 
   const handleSubmit = async (
     values: ResetPasswordFormValues,
-    helpers: { setSubmitting: (v: boolean) => void },
+    helpers: { setSubmitting: (v: boolean) => void }
   ) => {
     if (!token) return;
     setApiError(null);

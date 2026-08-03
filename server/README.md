@@ -302,35 +302,67 @@ Cross-cutting concerns:
 
 ---
 
-# 🎯 Sprint Progress
+### Inventory Module
 
-## ✅ Sprint 1
+- Added Inventory module with complete CRUD operations.
+- Inventory record is automatically created whenever a new product is created.
+- Added stock adjustment API to increase or decrease stock.
+- Added low stock API to retrieve products below minimum stock level.
+- Implemented inventory pagination, searching, sorting, and filtering.
+- Added inventory DTOs, validations, mappers, and response models.
 
-- Project Setup
-- MongoDB
-- User Registration
-- JWT Authentication
-- Swagger
-- Error Handling
+### Supplier Module
 
-## ✅ Sprint 2
+- Implemented complete Supplier CRUD APIs.
+- Added supplier search, pagination, sorting, and active/inactive filtering.
+- Implemented soft delete for suppliers.
+- Added supplier validation, DTOs, and response mapping.
 
-- User CRUD
-- Department CRUD
-- Product CRUD
-- Pagination & Search
-- Soft Delete
-- Manager Population
+### Excel Export
 
-## ✅ Sprint 3
+- Integrated **ExcelJS** for Excel generation.
+- Implemented generic Excel service for reusable exports.
+- Added Supplier Excel export API.
+- Configured downloadable Excel response with proper headers.
+- Generic implementation can be reused for Purchase, Sales, Inventory, Product, and other reports.
 
-- Forgot Password
-- Reset Password
-- Welcome Email
-- SMTP Integration
-- Reusable Email Service
+### Settings Module
 
----
+- Added Settings module for single-company ERP configuration.
+- Implemented Settings Create, Get, and Update APIs.
+- Stores company information including:
+  - Company Name
+  - GST Number
+  - Email
+  - Phone
+  - Address
+  - City
+  - State
+  - Country
+  - Postal Code
+
+- Designed as a singleton configuration (only one settings record).
+
+### File Upload
+
+- Integrated **Multer** for file uploads.
+- Added company logo upload API.
+- Configured disk storage for uploaded files.
+- Added image validation (PNG, JPG, JPEG).
+- Added file size validation.
+- Configured Express static middleware to serve uploaded files.
+- Stored relative file paths in the database and exposed logo URLs through the Settings API.
+
+### Shared Components
+
+- Added reusable Excel generation service.
+- Added reusable upload middleware for future modules.
+- Upload infrastructure is designed to support:
+  - Company Logo
+  - Product Images
+  - User Profile Images
+  - Supplier Documents
+  - Future file attachments
 
 # 👨‍💻 Development Guidelines
 

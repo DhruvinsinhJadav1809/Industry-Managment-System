@@ -1,7 +1,5 @@
 import express from "express";
-import { successResponse } from "./shared/response/response.helper";
 import { errorMiddleware } from "./middleware/error.middleware";
-import { NotFoundError } from "./shared/errors/not-found.error";
 import userRoutes from "./modules/users/routes/user.routes";
 import swaggerUi from "swagger-ui-express";
 import { swaggerSpec } from "./config/swagger";
@@ -9,6 +7,10 @@ import cors from "cors";
 import authRoutes from "./modules/auth/routes/auth.routes";
 import departmentRotes from "./modules/departments/routes/department.routes";
 import productRoutes from "./modules/products/routes/product.routes";
+import inventoryRoute from "./modules/inventory/routes/inventory.route";
+import supplierRoute from "./modules/supplier/routes/supplier.route";
+import settingRoute from "./modules/settings/routes/setting.route";
+import path from "path";
 const app = express();
 //CORS
 app.use(
@@ -28,6 +30,10 @@ app.use("/api/users", userRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/departments", departmentRotes);
 app.use("/api/products", productRoutes);
+app.use("/api/inventory", inventoryRoute);
+app.use("/api/suppliers", supplierRoute);
+app.use("/api/settings", settingRoute);
+app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 // Error Middleware (Always Last)
 app.use(errorMiddleware);
 

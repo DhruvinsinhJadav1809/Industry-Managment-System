@@ -2,7 +2,12 @@ import { Formik, Form } from "formik";
 import { Mail, MailCheck, SendHorizonal } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Alert, AuthLayout, Button, TextField } from "../components/common";
+import {
+  Alert,
+  AuthLayout,
+  Button,
+  TextField,
+} from "../components/common";
 import {
   forgotPasswordSchema,
   type ForgotPasswordFormValues,
@@ -19,7 +24,7 @@ export default function ForgotPassword() {
 
   const handleSubmit = async (
     values: ForgotPasswordFormValues,
-    helpers: { setSubmitting: (v: boolean) => void },
+    helpers: { setSubmitting: (v: boolean) => void }
   ) => {
     setApiError(null);
     try {
@@ -60,8 +65,8 @@ export default function ForgotPassword() {
               Check your email
             </p>
             <p className="mt-1 max-w-xs text-sm text-steel-500 dark:text-steel-400">
-              If an account exists for <strong>{sentTo}</strong>, a reset link
-              is on its way. It expires in 15 minutes.
+              If an account exists for <strong>{sentTo}</strong>, a reset
+              link is on its way. It expires in 60 minutes.
             </p>
           </div>
           <button

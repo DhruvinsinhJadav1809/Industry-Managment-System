@@ -4,18 +4,24 @@ import {
   LogOut,
   Menu,
   Package,
+  Settings,
+  Truck,
   Users as UsersIcon,
   X,
 } from "lucide-react";
 import { useState, type ReactNode } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { clsx } from "clsx";
-import { Logo, ThemeToggle } from "../components/common";
 import { useAuth } from "../context/AuthContext";
 import { ROLES, ROLE_LABELS } from "../constants/roles";
-
+import { CompanyBrand, ThemeToggle } from "../components/common";
 const navItems = [
-  { to: "/", label: "Dashboard", icon: LayoutDashboard, roles: null as number[] | null },
+  {
+    to: "/",
+    label: "Dashboard",
+    icon: LayoutDashboard,
+    roles: null as number[] | null,
+  },
   { to: "/users", label: "Users", icon: UsersIcon, roles: [ROLES.ADMIN] },
   {
     to: "/departments",
@@ -29,6 +35,18 @@ const navItems = [
     icon: Package,
     roles: [ROLES.ADMIN],
   },
+  {
+    to: "/suppliers",
+    label: "Suppliers",
+    icon: Truck,
+    roles: [ROLES.ADMIN],
+  },
+  {
+    to: "/settings",
+    label: "Settings",
+    icon: Settings,
+    roles: [ROLES.ADMIN],
+  },
 ];
 
 function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
@@ -36,13 +54,13 @@ function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
   const location = useLocation();
 
   const visibleItems = navItems.filter(
-    (item) => !item.roles || item.roles.includes(user?.roleId ?? -1)
+    (item) => !item.roles || item.roles.includes(user?.roleId ?? -1),
   );
 
   return (
     <>
       <div className="px-5 py-5">
-        <Logo size={30} />
+        <CompanyBrand size={30} />
       </div>
 
       <nav className="flex flex-1 flex-col gap-0.5 px-3">
@@ -60,7 +78,7 @@ function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
                 "flex cursor-pointer items-center gap-2.5 rounded-md px-2.5 py-2 font-body text-sm font-medium transition-colors",
                 active
                   ? "bg-steel-800 text-steel-50 dark:bg-amber-400 dark:text-steel-950"
-                  : "text-steel-600 hover:bg-steel-100 hover:text-steel-900 dark:text-steel-300 dark:hover:bg-steel-800/60 dark:hover:text-steel-50"
+                  : "text-steel-600 hover:bg-steel-100 hover:text-steel-900 dark:text-steel-300 dark:hover:bg-steel-800/60 dark:hover:text-steel-50",
               )}
             >
               <Icon className="size-4 shrink-0" aria-hidden="true" />

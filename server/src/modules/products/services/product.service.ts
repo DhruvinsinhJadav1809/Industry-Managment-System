@@ -15,12 +15,12 @@ import { toProductResponseDto } from "../../../shared/mappers/product.mapper";
 import { GetProductsQueryDto } from "../dto/responses/get-products-query.dto";
 import { PaginatedResponseDto } from "../../../shared/types/paginated-response.dto";
 import { UpdateProductDto } from "../dto/requests/update-product.dto";
+import * as inventoryService from "../../inventory/services/inventory.service";
 
 export const createProduct = async (
   data: CreateProductDto,
   currentUserId: string,
 ): Promise<ProductResponseDto> => {
-  console.log(data);
   const normalizedName = data.name.trim();
   const normalizedSku = data.sku.trim().toUpperCase();
   const normalizeProductCode = data.productCode.trim().toUpperCase();
@@ -67,7 +67,10 @@ export const createProduct = async (
     productCode: normalizeProductCode,
     createdBy: new Types.ObjectId(currentUserId),
   });
-
+  await inventoryService.createInventoryForProduct(
+    product._id.toString(),
+    currentUserId,
+  );
   await product.populate(PRODUCT_DEPARTMENT_POPULATE);
 
   return toProductResponseDto(

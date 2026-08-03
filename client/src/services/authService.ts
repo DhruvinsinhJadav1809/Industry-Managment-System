@@ -17,7 +17,7 @@ export const authService = {
   register: async (payload: RegisterPayload) => {
     const { data } = await apiClient.post<ApiResponse<RegisteredUser>>(
       "/users",
-      payload,
+      payload
     );
     return data;
   },
@@ -28,7 +28,7 @@ export const authService = {
   login: async (payload: LoginPayload) => {
     const { data } = await apiClient.post<ApiResponse<LoginResult>>(
       "/auth/login",
-      payload,
+      payload
     );
     return data;
   },
@@ -37,7 +37,7 @@ export const authService = {
   forgotPassword: async (payload: ForgotPasswordPayload) => {
     const { data } = await apiClient.post<ApiResponse<unknown>>(
       "/auth/forgot-password",
-      payload,
+      payload
     );
     return data;
   },
@@ -46,7 +46,7 @@ export const authService = {
   resetPassword: async (payload: ResetPasswordPayload) => {
     const { data } = await apiClient.post<ApiResponse<unknown>>(
       "/auth/reset-password",
-      payload,
+      payload
     );
     return data;
   },

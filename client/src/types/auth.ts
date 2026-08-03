@@ -19,6 +19,15 @@ export interface LoginPayload {
   password: string;
 }
 
+export interface ForgotPasswordPayload {
+  email: string;
+}
+
+export interface ResetPasswordPayload {
+  token: string;
+  password: string;
+}
+
 /**
  * `data` shape returned by POST /users.
  */
@@ -45,13 +54,4 @@ export interface AuthUser {
 export interface LoginResult {
   user: AuthUser;
   accessToken: string;
-}
-
-export interface ForgotPasswordPayload {
-  email: string;
-}
-
-export interface ResetPasswordPayload {
-  token: string;
-  password: string;
 }

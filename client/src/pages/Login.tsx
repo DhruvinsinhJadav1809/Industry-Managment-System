@@ -26,14 +26,12 @@ import type { ApiErrorShape } from "../lib/axios";
 export default function Login() {
   const navigate = useNavigate();
   const location = useLocation();
-
   const [searchParams] = useSearchParams();
-
-  const passwordReset = searchParams.get("passwordReset") === "1";
   const { login } = useAuth();
   const [apiError, setApiError] = useState<string | null>(null);
 
   const sessionExpired = searchParams.get("sessionExpired") === "1";
+  const passwordReset = searchParams.get("passwordReset") === "1";
 
   // Arrives here after a fresh registration, so the email is pre-filled.
   const registeredEmail =
@@ -89,6 +87,7 @@ export default function Login() {
           <Alert variant="success">Account created. Sign in to continue.</Alert>
         </div>
       )}
+
       {!registeredEmail && passwordReset && (
         <div className="mb-5">
           <Alert variant="success">
@@ -96,7 +95,8 @@ export default function Login() {
           </Alert>
         </div>
       )}
-      {!registeredEmail && sessionExpired && (
+
+      {!registeredEmail && !passwordReset && sessionExpired && (
         <div className="mb-5">
           <Alert variant="info">
             Your session has expired. Sign in again to continue.
