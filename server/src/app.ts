@@ -10,6 +10,7 @@ import productRoutes from "./modules/products/routes/product.routes";
 import inventoryRoute from "./modules/inventory/routes/inventory.route";
 import supplierRoute from "./modules/supplier/routes/supplier.route";
 import settingRoute from "./modules/settings/routes/setting.route";
+import purchaseRoutes from "./modules/purchase/routes/purchase.route";
 import path from "path";
 const app = express();
 //CORS
@@ -33,6 +34,7 @@ app.use("/api/products", productRoutes);
 app.use("/api/inventory", inventoryRoute);
 app.use("/api/suppliers", supplierRoute);
 app.use("/api/settings", settingRoute);
+app.use("/api/purchases", purchaseRoutes);
 app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 // Error Middleware (Always Last)
 app.use(errorMiddleware);

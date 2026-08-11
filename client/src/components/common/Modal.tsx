@@ -10,7 +10,13 @@ interface ModalProps {
   children: ReactNode;
 }
 
-export function Modal({ open, onClose, title, description, children }: ModalProps) {
+export function Modal({
+  open,
+  onClose,
+  title,
+  description,
+  children,
+}: ModalProps) {
   useEffect(() => {
     if (!open) return;
     const onKeyDown = (e: KeyboardEvent) => {
@@ -38,7 +44,7 @@ export function Modal({ open, onClose, title, description, children }: ModalProp
         role="dialog"
         aria-modal="true"
         aria-labelledby="modal-title"
-        className="corner-frame relative flex max-h-[80vh] w-full max-w-md flex-col rounded-lg border border-steel-200 bg-white p-6 shadow-2xl dark:border-steel-800 dark:bg-steel-900"
+        className="corner-frame relative flex max-h-[80vh] w-full max-w-lg flex-col rounded-lg border border-steel-200 bg-white p-6 shadow-2xl dark:border-steel-800 dark:bg-steel-900"
       >
         <div className="flex shrink-0 items-start justify-between gap-4">
           <div>
@@ -63,9 +69,11 @@ export function Modal({ open, onClose, title, description, children }: ModalProp
           </button>
         </div>
 
-        <div className="mt-5 min-h-0 flex-1 overflow-y-auto pr-1">{children}</div>
+        <div className="mt-5 min-h-0 flex-1 overflow-y-auto pr-1">
+          {children}
+        </div>
       </div>
     </div>,
-    document.body
+    document.body,
   );
 }

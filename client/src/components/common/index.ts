@@ -14,3 +14,4 @@ export { StatusPage } from "./StatusPage";
 export { ErrorBoundary } from "./ErrorBoundary";
 export { ToastViewport } from "./ToastViewport";
 export { CompanyBrand } from "./CompanyBrand";
+export { NotificationBell } from "./NotificationBell";
