@@ -47,6 +47,7 @@ export function LogoUploader({ logoUrl, onUploaded }: LogoUploaderProps) {
             src={logoUrl}
             alt="Company logo"
             className="size-full object-contain"
+            crossOrigin="anonymous"
           />
         ) : (
           <ImageIcon

@@ -12,9 +12,15 @@ const router = Router();
 router.get(
   "/",
   authenticate,
-  authorize([UserRole.Admin]),
+  authorize([UserRole.Admin, UserRole.Employee]),
   validateRequest(getInventoryQuerySchema, "query"),
   inventoryController.getInventories,
+);
+router.get(
+  "/low-stock",
+  authenticate,
+  authorize([UserRole.Admin, UserRole.Employee]),
+  inventoryController.getLowStockInventory,
 );
 router.get(
   "/:id",
@@ -38,10 +44,5 @@ router.post(
   validateRequest(adjustInventorySchema),
   inventoryController.adjustInventory,
 );
-router.get(
-  "/low-stock",
-  authenticate,
-  authorize([UserRole.Admin]),
-  inventoryController.getLowStockInventory,
-);
+
 export default router;

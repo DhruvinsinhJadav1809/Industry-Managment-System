@@ -19,6 +19,7 @@ export function CompanyBrand({ size = 30 }: CompanyBrandProps) {
         alt={settings.companyName}
         style={{ width: size, height: size }}
         className="shrink-0 rounded-md border border-steel-200 object-contain dark:border-steel-700"
+        crossOrigin="anonymous"
       />
       <div className="flex min-w-0 flex-col leading-none">
         <span className="truncate font-display text-sm font-bold tracking-tight text-steel-900 dark:text-steel-50">

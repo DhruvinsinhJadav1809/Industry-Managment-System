@@ -11,8 +11,13 @@ import inventoryRoute from "./modules/inventory/routes/inventory.route";
 import supplierRoute from "./modules/supplier/routes/supplier.route";
 import settingRoute from "./modules/settings/routes/setting.route";
 import purchaseRoutes from "./modules/purchase/routes/purchase.route";
+import dashBoardRoutes from "./modules/dashboard/routes/dashboard.routes";
 import path from "path";
+import helmet from "helmet";
+import { apiRateLimiter } from "./middleware/rate-limit.middleware";
+
 const app = express();
+app.use(helmet());
 //CORS
 app.use(
   cors({
@@ -20,6 +25,8 @@ app.use(
     credentials: true,
   }),
 );
+//Rate limiter
+app.use(apiRateLimiter);
 // Middleware
 app.use(express.json());
 
@@ -35,28 +42,9 @@ app.use("/api/inventory", inventoryRoute);
 app.use("/api/suppliers", supplierRoute);
 app.use("/api/settings", settingRoute);
 app.use("/api/purchases", purchaseRoutes);
+app.use("/api/dashboard", dashBoardRoutes);
 app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 // Error Middleware (Always Last)
 app.use(errorMiddleware);
 
 export default app;
-
-// Default Route
-// app.get("/", (req, res) => {
-//   res.send("Welcome to HandleFlow ERP API 🚀");
-// });
-// app.get("/api/error", () => {
-//   throw new NotFoundError("Product not found.");
-//   // throw new Error("Testing Error Middleware");
-// });
-// app.get("/api/health", (req, res) => {
-//   return res.status(200).json(
-//     successResponse(
-//       {
-//         version: "1.0.0",
-//         environment: "development",
-//       },
-//       "HandleFlow ERP API is running.",
-//     ),
-//   );
-// });
