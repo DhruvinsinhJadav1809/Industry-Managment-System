@@ -9,6 +9,7 @@ import {
   Users as UsersIcon,
   X,
   Wallet,
+  Receipt,
 } from "lucide-react";
 import { useState, type ReactNode } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
@@ -54,6 +55,12 @@ const navItems = [
     to: "/settings",
     label: "Settings",
     icon: Settings,
+    roles: [ROLES.ADMIN],
+  },
+  {
+    to: "/sales",
+    label: "Sales",
+    icon: Receipt,
     roles: [ROLES.ADMIN],
   },
 ];
@@ -143,7 +150,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
         </div>
       )}
 
-      <div className="flex min-h-screen flex-1 flex-col">
+      <div className="flex min-h-screen flex-1 flex-col min-w-0">
         <header className="sticky top-0 z-30 flex items-center justify-between border-b border-steel-200 bg-steel-50/90 px-4 py-3.5 backdrop-blur-sm dark:border-steel-800 dark:bg-steel-950/90 sm:px-6">
           <button
             onClick={() => setMobileOpen(true)}

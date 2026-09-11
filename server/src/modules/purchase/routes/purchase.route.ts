@@ -9,7 +9,6 @@ import { UserRole } from "../../../shared/enums/user-role.enum";
 import * as purchaseController from "../controller/purchase.controller";
 
 import { createPurchaseSchema } from "../validations/create-purchase.validation";
-import { updatePurchaseSchema } from "../validations/update-purchase.validation";
 import { getPurchasesSchema } from "../validations/get-purchase.validation";
 
 import { userIdParamsSchema } from "../../users/validations/user-id-params.validation.ts";

@@ -1,20 +1,20 @@
 import { Trash2 } from "lucide-react";
-import { ProductPicker } from "./ProductPicker";
-import type { PurchaseItemFormValues } from "../../lib/validations/purchaseSchemas";
+import { ProductPicker } from "../purchases/ProductPicker";
+import type { SaleItemFormValues } from "../../lib/validations/salesSchemas";
 import type { ProductListItem } from "../../types/product";
 
 interface ItemFieldError {
   productId?: string;
   quantity?: string;
-  unitPrice?: string;
-  taxPercentage?: string;
+  rate?: string;
+  gstPercentage?: string;
 }
 
-interface PurchaseItemRowProps {
+interface SaleItemRowProps {
   index: number;
-  item: PurchaseItemFormValues;
+  item: SaleItemFormValues;
   error?: ItemFieldError;
-  onChange: (index: number, patch: Partial<PurchaseItemFormValues>) => void;
+  onChange: (index: number, patch: Partial<SaleItemFormValues>) => void;
   onRemove: (index: number) => void;
   canRemove: boolean;
 }
@@ -27,27 +27,31 @@ function numberInputClasses(hasError: boolean) {
   }`;
 }
 
-export function PurchaseItemRow({
+export function SaleItemRow({
   index,
   item,
   error,
   onChange,
   onRemove,
   canRemove,
-}: PurchaseItemRowProps) {
+}: SaleItemRowProps) {
   const lineTotal =
-    item.quantity && item.unitPrice
-      ? item.quantity * item.unitPrice * (1 + (item.taxPercentage || 0) / 100)
+    item.quantity && item.rate
+      ? item.quantity * item.rate * (1 + (item.gstPercentage || 0) / 100)
       : 0;
 
   const handleProductSelect = (product: ProductListItem) => {
     onChange(index, {
       productId: product.id,
       productLabel: `${product.name} (${product.sku})`,
-      unitPrice: product.costPrice,
+      // Always sync to the newly selected product's selling price — not
+      // just when the row is empty. Previously this used
+      // `item.rate || product.sellingPrice`, which meant switching to a
+      // different product kept showing the FIRST product's price, since
+      // `item.rate` was already truthy from the first selection.
+      rate: product.sellingPrice,
     });
   };
-
   return (
     <div className="grid grid-cols-12 gap-3 border-b border-steel-100 py-4 last:border-0 dark:border-steel-800/60">
       <div className="col-span-12 sm:col-span-4">
@@ -84,47 +88,47 @@ export function PurchaseItemRow({
 
       <div className="col-span-4 sm:col-span-2">
         <label className="mb-1.5 block font-mono text-[10px] uppercase tracking-wider text-steel-500 dark:text-steel-400">
-          Unit price
+          Rate
         </label>
         <input
           type="number"
           min="0"
           step="0.01"
-          value={item.unitPrice || ""}
+          value={item.rate || ""}
           onChange={(e) =>
             onChange(index, {
-              unitPrice: e.target.value === "" ? 0 : Number(e.target.value),
+              rate: e.target.value === "" ? 0 : Number(e.target.value),
             })
           }
-          className={numberInputClasses(Boolean(error?.unitPrice))}
+          className={numberInputClasses(Boolean(error?.rate))}
         />
-        {error?.unitPrice && (
+        {error?.rate && (
           <p className="mt-1 text-[11px] text-red-600 dark:text-red-400">
-            {error.unitPrice}
+            {error.rate}
           </p>
         )}
       </div>
 
       <div className="col-span-4 sm:col-span-2">
         <label className="mb-1.5 block font-mono text-[10px] uppercase tracking-wider text-steel-500 dark:text-steel-400">
-          Tax %
+          GST %
         </label>
         <input
           type="number"
           min="0"
           max="100"
           step="0.01"
-          value={item.taxPercentage || ""}
+          value={item.gstPercentage || ""}
           onChange={(e) =>
             onChange(index, {
-              taxPercentage: e.target.value === "" ? 0 : Number(e.target.value),
+              gstPercentage: e.target.value === "" ? 0 : Number(e.target.value),
             })
           }
-          className={numberInputClasses(Boolean(error?.taxPercentage))}
+          className={numberInputClasses(Boolean(error?.gstPercentage))}
         />
-        {error?.taxPercentage && (
+        {error?.gstPercentage && (
           <p className="mt-1 text-[11px] text-red-600 dark:text-red-400">
-            {error.taxPercentage}
+            {error.gstPercentage}
           </p>
         )}
       </div>

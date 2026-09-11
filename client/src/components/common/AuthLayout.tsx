@@ -47,32 +47,6 @@ export function AuthLayout({
           <p className="mt-4 text-[15px] leading-relaxed text-steel-300">
             {subtitle}
           </p>
-
-          <div className="mt-10 flex items-center gap-2 text-steel-400">
-            <Gauge className="size-4" aria-hidden="true" />
-            <span className="font-mono text-[11px] uppercase tracking-wider">
-              Live network status
-            </span>
-          </div>
-          <dl className="mt-3 grid grid-cols-3 gap-3">
-            {stats.map(({ icon: Icon, label, value }) => (
-              <div
-                key={label}
-                className="corner-frame rounded-md border border-steel-700/70 bg-steel-800/40 px-3 py-3"
-              >
-                <Icon
-                  className="size-3.5 text-steel-500"
-                  aria-hidden="true"
-                />
-                <dd className="mt-2 font-mono text-lg font-semibold text-steel-50">
-                  {value}
-                </dd>
-                <dt className="mt-0.5 text-[11px] leading-tight text-steel-400">
-                  {label}
-                </dt>
-              </div>
-            ))}
-          </dl>
         </div>
 
         <p className="relative z-10 font-mono text-[11px] text-steel-500">

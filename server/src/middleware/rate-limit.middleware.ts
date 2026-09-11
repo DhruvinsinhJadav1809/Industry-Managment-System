@@ -1,8 +1,8 @@
-import rateLimit from "express-rate-limit";
+import rateLimit, { ipKeyGenerator } from "express-rate-limit";
 
 export const apiRateLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  limit: 50, //MAx 50 api
+  limit: 500, // Max 50 requests
 
   standardHeaders: "draft-7",
   legacyHeaders: false,
@@ -25,7 +25,7 @@ export const loginRateLimiter = rateLimit({
       .trim()
       .toLowerCase();
 
-    const ip = req.ip ?? "unknown";
+    const ip = ipKeyGenerator(req.ip ?? "unknown");
 
     return `${email}:${ip}`;
   },

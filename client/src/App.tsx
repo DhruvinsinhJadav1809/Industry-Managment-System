@@ -22,7 +22,8 @@ import { CompanySettingsProvider } from "./context/CompanySettingsContext";
 import Purchases from "./pages/Purchases";
 import PurchaseCreate from "./pages/CreatePurchase";
 import { NotificationProvider } from "./context/NotificationContext";
-
+import SaleCreate from "./pages/SalesCreate";
+import Sales from "./pages/Sales";
 export default function App() {
   return (
     <ErrorBoundary>
@@ -124,8 +125,29 @@ export default function App() {
                       </ProtectedRoute>
                     }
                   />
+                  <Route
+                    path="/sales"
+                    element={
+                      <ProtectedRoute>
+                        <RequireRole allow={[ROLES.ADMIN]}>
+                          <Sales />
+                        </RequireRole>
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/sales/new"
+                    element={
+                      <ProtectedRoute>
+                        <RequireRole allow={[ROLES.ADMIN]}>
+                          <SaleCreate />
+                        </RequireRole>
+                      </ProtectedRoute>
+                    }
+                  />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
+
                 <ToastViewport />
               </CompanySettingsProvider>
             </NotificationProvider>

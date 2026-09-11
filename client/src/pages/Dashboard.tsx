@@ -19,8 +19,7 @@ export default function Dashboard() {
             chart to admins — everyone else would just hit a 403. */}
         {user?.roleId === ROLES.ADMIN && (
           <>
-            <PurchaseTrendChart />
-            <FinancialSummaryPanel />{" "}
+            <FinancialSummaryPanel /> <PurchaseTrendChart />
           </>
         )}
 
