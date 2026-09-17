@@ -12,7 +12,9 @@ import { UserRole } from "../../../shared/enums/user-role.enum";
 import * as notificationService from "../../notification/services/notification.service";
 import { GetSalesQueryDto } from "../dto/get-sales.dto";
 import { ISale } from "../types/sales.types";
-
+import { UpdateSalePaymentDto } from "../validation/sale.validation";
+import { Response as ExpressResponse } from "express";
+import { ExcelService } from "../../../shared/excel/excel.service";
 interface SaleItem {
   productId: mongoose.Types.ObjectId;
   productName: string;
@@ -395,6 +397,12 @@ export const getSales = async (query: GetSalesQueryDto) => {
           $options: "i",
         },
       },
+      {
+        customerName: {
+          $regex: search,
+          $options: "i",
+        },
+      },
     ];
   }
 
@@ -421,5 +429,128 @@ export const getSales = async (query: GetSalesQueryDto) => {
       total,
       totalPages: Math.ceil(total / pageSize),
     },
+  };
+};
+export const updateSalePayment = async (
+  saleId: string,
+  dto: UpdateSalePaymentDto,
+  currentUserId: string,
+) => {
+  if (!mongoose.Types.ObjectId.isValid(saleId)) {
+    throw new BadRequestError("Invalid sale ID.");
+  }
+
+  const sale = await SaleModel.findOne({
+    _id: saleId,
+    isDeleted: false,
+  });
+
+  if (!sale) {
+    throw new NotFoundError("Sale not found.");
+  }
+
+  if (dto.paymentMethod !== undefined) {
+    sale.paymentMethod = dto.paymentMethod;
+  }
+
+  if (dto.paymentStatus !== undefined) {
+    sale.paymentStatus = dto.paymentStatus;
+  }
+
+  sale.updatedBy = new mongoose.Types.ObjectId(currentUserId);
+
+  await sale.save();
+
+  return sale;
+};
+export const exportSales = async (res: ExpressResponse): Promise<void> => {
+  const sales = await SaleModel.find({
+    isDeleted: false,
+  });
+
+  const rows = sales.map((sale) => ({
+    saleNumber: sale.saleNumber,
+    customerName: sale.customerName,
+    invoiceNumber: sale.invoiceNumber,
+    saleDate: sale.saleDate,
+    subTotal: sale.subTotal,
+    totalTax: sale.totalTax,
+    discountAmount: sale.discountAmount,
+    grandTotal: sale.grandTotal,
+    paymentStatus: sale.paymentStatus,
+  }));
+
+  await ExcelService.generateExcel(
+    {
+      sheetName: "Sales",
+
+      fileName: "sales",
+
+      columns: [
+        {
+          header: "Sale No",
+          key: "saleNumber",
+          width: 20,
+        },
+        {
+          header: "Customer",
+          key: "customerName",
+          width: 30,
+        },
+
+        {
+          header: "Invoice No",
+          key: "invoiceNumber",
+          width: 20,
+        },
+        {
+          header: "Sale Date",
+          key: "saleDate",
+          width: 18,
+        },
+        {
+          header: "Subtotal",
+          key: "subtotal",
+          width: 15,
+        },
+        {
+          header: "Tax",
+          key: "totalTax",
+          width: 15,
+        },
+        {
+          header: "Discount",
+          key: "discountAmount",
+          width: 15,
+        },
+        {
+          header: "Grand Total",
+          key: "grandTotal",
+          width: 18,
+        },
+        {
+          header: "Status",
+          key: "paymentStatus",
+          width: 15,
+        },
+      ],
+
+      data: rows,
+    },
+    res,
+  );
+};
+export const getSalesById = async (id: string) => {
+  const sales = await SaleModel.findOne({
+    _id: id,
+    isDeleted: false,
+  }).lean();
+
+  if (!sales) {
+    throw new NotFoundError("Sales not found.");
+  }
+
+  return {
+    ...sales,
   };
 };

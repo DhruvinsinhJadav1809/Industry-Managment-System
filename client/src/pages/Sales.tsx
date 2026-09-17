@@ -1,4 +1,4 @@
-import { Plus, Receipt, Search } from "lucide-react";
+import { Download, Plus, Receipt, Search } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { Alert, Button, Pagination, Select } from "../components/common";
@@ -9,10 +9,16 @@ import { useDebouncedValue } from "../hooks/useDebouncedValue";
 import { saleService } from "../services/salesService";
 import type { ApiErrorShape } from "../lib/axios";
 import type { SaleListItem } from "../types/sale";
-
+import {
+  downloadBlob,
+  fileNameFromContentDisposition,
+} from "../lib/downloadFile";
+import { useToast } from "../context/ToastContext";
+import { SaleDetailModal } from "../components/sales/Saledetailmodal";
 const PAGE_SIZE = 10;
 
 export default function Sales() {
+  const toast = useToast();
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("");
@@ -22,7 +28,8 @@ export default function Sales() {
   const [totalPages, setTotalPages] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
-
+  const [viewingId, setViewingId] = useState<string | null>(null);
+  const [isExporting, setIsExporting] = useState(false);
   const debouncedSearch = useDebouncedValue(search, 350);
 
   // NOTE: no customerId filter in the UI yet — there's no customer
@@ -64,7 +71,24 @@ export default function Sales() {
   useEffect(() => {
     setPage(1);
   }, [debouncedSearch, status]);
-
+  const handleExport = async () => {
+    setIsExporting(true);
+    try {
+      const response = await saleService.exportExcel({
+        search: debouncedSearch || undefined,
+      });
+      const fileName = fileNameFromContentDisposition(
+        response.headers["content-disposition"],
+        "sales.xlsx",
+      );
+      downloadBlob(response.data, fileName);
+      toast.success("Export downloaded.");
+    } catch {
+      toast.error("Could not export sales. Please try again.");
+    } finally {
+      setIsExporting(false);
+    }
+  };
   return (
     <AppLayout>
       <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
@@ -81,12 +105,21 @@ export default function Sales() {
             </p>
           </div>
         </div>
-
-        <Link to="/sales/new">
-          <Button icon={<Plus className="size-4" aria-hidden="true" />}>
-            New sale
+        <div className="flex items-center gap-3">
+          <Button
+            variant="secondary"
+            onClick={handleExport}
+            isLoading={isExporting}
+            icon={<Download className="size-4" aria-hidden="true" />}
+          >
+            Export
           </Button>
-        </Link>
+          <Link to="/sales/new">
+            <Button icon={<Plus className="size-4" aria-hidden="true" />}>
+              New sale
+            </Button>
+          </Link>
+        </div>
       </div>
 
       <div className="mb-5 grid grid-cols-1 gap-3 sm:grid-cols-3">
@@ -121,7 +154,12 @@ export default function Sales() {
         <Alert variant="error">{loadError}</Alert>
       ) : (
         <>
-          <SaleTable sales={sales} isLoading={isLoading} />
+          <SaleTable
+            sales={sales}
+            isLoading={isLoading}
+            onSave={fetchSales}
+            onView={(p) => setViewingId(p._id)}
+          />
 
           <div className="mt-4">
             <Pagination
@@ -134,6 +172,7 @@ export default function Sales() {
           </div>
         </>
       )}
+      <SaleDetailModal saleId={viewingId} onClose={() => setViewingId(null)} />
     </AppLayout>
   );
 }

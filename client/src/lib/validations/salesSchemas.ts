@@ -16,6 +16,7 @@ export const saleItemSchema = z.object({
 });
 
 export type SaleItemFormValues = z.infer<typeof saleItemSchema>;
+export type CreateSaleFormValues = z.infer<typeof createSaleSchema>;
 
 export const createSaleSchema = z.object({
   saleDate: z.string().min(1, "Sale date is required"),
@@ -34,4 +35,17 @@ export const createSaleSchema = z.object({
   notes: z.string().max(300, "Notes must be under 300 characters").optional(),
 });
 
-export type CreateSaleFormValues = z.infer<typeof createSaleSchema>;
+export const updateSalePaymentSchema = z
+  .object({
+    paymentMethod: z.string().min(1, "Select a payment method"),
+    paymentStatus: z.string().min(1, "Select a payment status"),
+  })
+  .refine(
+    (data) =>
+      data.paymentMethod !== undefined || data.paymentStatus !== undefined,
+    {
+      message: "At least one payment field is required.",
+    },
+  );
+
+export type UpdateSalePaymentPayload = z.infer<typeof updateSalePaymentSchema>;

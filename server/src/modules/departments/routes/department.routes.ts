@@ -3,7 +3,10 @@ import { authenticate } from "../../../middleware/auth.middleware";
 import { UserRole } from "../../../shared/enums/user-role.enum";
 import { authorize } from "../../../middleware/authorization.middleware";
 import { validateRequest } from "../../../middleware/validate-request";
-import { createDepartmentSchema } from "../validations/create-department.validation";
+import {
+  assignManagerSchema,
+  createDepartmentSchema,
+} from "../validations/create-department.validation";
 import * as departmentController from "../controllers/department.controller";
 import { getDepartmentsSchema } from "../validations/get-department.validation";
 import { userIdParamsSchema } from "../../users/validations/user-id-params.validation.ts";
@@ -23,7 +26,7 @@ router.patch(
   "/:id/manager",
   authenticate,
   authorize([UserRole.Admin]),
-  validateRequest(objectIdSchema),
+  validateRequest(assignManagerSchema),
   departmentController.assignManager,
 );
 router.get(

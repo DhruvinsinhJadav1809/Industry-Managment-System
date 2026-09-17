@@ -101,3 +101,7 @@ export interface SaleListParams {
   sortBy?: string;
   sortOrder?: SaleSortOrder;
 }
+export interface UpdateSalePaymentPayload {
+  paymentMethod?: string;
+  paymentStatus?: string;
+}

@@ -35,3 +35,26 @@ export const loginRateLimiter = rateLimit({
     message: "Too many login attempts. Please try again later.",
   },
 });
+
+export const chatRateLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 20,
+
+  standardHeaders: "draft-7",
+  legacyHeaders: false,
+
+  keyGenerator: (req) => {
+    const email = String(req.body?.email ?? "")
+      .trim()
+      .toLowerCase();
+
+    const ip = ipKeyGenerator(req.ip ?? "unknown");
+
+    return `${email}:${ip}`;
+  },
+
+  message: {
+    success: false,
+    message: "Too many chat requests. Please try again later.",
+  },
+});

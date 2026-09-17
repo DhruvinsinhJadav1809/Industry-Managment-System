@@ -41,6 +41,7 @@ export const getFinancialSummary = async (): Promise<FinancialSummaryDto> => {
             $gte: start,
             $lte: end,
           },
+          paymentStatus: "PAID",
         },
       },
       {

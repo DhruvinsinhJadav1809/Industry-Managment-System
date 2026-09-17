@@ -1,13 +1,30 @@
 import { Badge } from "../common";
 import { saleStatusTone } from "../../constants/saleStatus";
 import type { SaleListItem } from "../../types/sale";
+import { Eye, Pencil } from "lucide-react";
+import { useState } from "react";
+import { SalesEditPaymentModal } from "./SalesEditPaymentModal";
 
 interface SaleTableProps {
   sales: SaleListItem[];
   isLoading: boolean;
+  onSave: () => void;
+  onView: (purchase: SaleListItem) => void;
 }
 
-export function SaleTable({ sales, isLoading }: SaleTableProps) {
+export function SaleTable({
+  sales,
+  isLoading,
+  onSave,
+  onView,
+}: SaleTableProps) {
+  const [editData, setEditData] = useState<SaleListItem | null>(null);
+  const onEdit = (sale: SaleListItem) => {
+    setEditData(sale);
+  };
+  const closeModal = () => {
+    setEditData(null);
+  };
   return (
     <div className="overflow-x-auto rounded-lg border border-steel-200 dark:border-steel-800">
       <table className="w-full min-w-[600px] border-collapse text-left text-sm">
@@ -35,6 +52,9 @@ export function SaleTable({ sales, isLoading }: SaleTableProps) {
 
             <th className="px-4 py-3 font-mono text-[11px] font-semibold uppercase tracking-wider text-steel-500 dark:text-steel-400">
               Status
+            </th>
+            <th className="px-4 py-3 font-mono text-[11px] font-semibold uppercase tracking-wider text-steel-500 dark:text-steel-400">
+              Options
             </th>
           </tr>
         </thead>
@@ -100,11 +120,41 @@ export function SaleTable({ sales, isLoading }: SaleTableProps) {
                     {sale.paymentStatus}
                   </Badge>
                 </td>
+                <td className="px-4 py-3.5">
+                  {sale.paymentStatus !== "PAID" && (
+                    <button
+                      type="button"
+                      onClick={() => onEdit(sale)}
+                      aria-label={`Edit ${sale._id}`}
+                      className="cursor-pointer rounded-md p-1.5 text-steel-500 transition-colors hover:bg-steel-100 hover:text-steel-800 dark:text-steel-400 dark:hover:bg-steel-800 dark:hover:text-steel-100"
+                    >
+                      <Pencil className="size-4" aria-hidden="true" />
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onView(sale);
+                    }}
+                    aria-label={`View ${sale.saleNumber}`}
+                    className="cursor-pointer rounded-md p-1.5 text-steel-500 transition-colors hover:bg-steel-100 hover:text-steel-800 dark:text-steel-400 dark:hover:bg-steel-800 dark:hover:text-steel-100"
+                  >
+                    <Eye className="size-4" aria-hidden="true" />
+                  </button>
+                </td>
               </tr>
             ))
           )}
         </tbody>
       </table>
+      {editData && (
+        <SalesEditPaymentModal
+          sale={editData}
+          onClose={closeModal}
+          onSaved={onSave}
+        />
+      )}
     </div>
   );
 }

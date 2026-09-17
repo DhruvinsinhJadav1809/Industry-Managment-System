@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { objectIdSchema } from "../../../shared/validations/object-id.validation";
 
 export const createDepartmentSchema = z.object({
   name: z.string().trim().min(2, "Department name is required.").max(100),
@@ -16,4 +17,7 @@ export const createDepartmentSchema = z.object({
     .string()
     .regex(/^[a-f\d]{24}$/i, "Invalid manager id.")
     .optional(),
+});
+export const assignManagerSchema = z.object({
+  managerId: objectIdSchema,
 });

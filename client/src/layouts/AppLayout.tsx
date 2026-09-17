@@ -18,6 +18,7 @@ import { useAuth } from "../context/AuthContext";
 import { ROLES, ROLE_LABELS } from "../constants/roles";
 import { CompanyBrand, ThemeToggle } from "../components/common";
 import { NotificationBell } from "../components/common";
+import { ChatWidget } from "../components/chat/ChatWidget";
 
 const navItems = [
   {
@@ -123,6 +124,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
 
   return (
     <div className="flex min-h-screen bg-steel-50 dark:bg-steel-950">
+      {user?.roleId === ROLES.ADMIN && <ChatWidget />}
       {/* Desktop sidebar */}
       <aside className="blueprint-grid hidden h-screen w-60 shrink-0 flex-col border-r border-steel-200 bg-white sticky top-0 md:flex dark:border-steel-800 dark:bg-steel-900">
         {" "}

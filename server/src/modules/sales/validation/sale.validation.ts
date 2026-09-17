@@ -54,3 +54,26 @@ export const getSalesQuerySchema = z.object({
 
   status: z.string().trim().optional(),
 });
+export const updateSalePaymentSchema = z
+  .object({
+    paymentMethod: z
+      .enum(["CASH", "BANK", "UPI", "CARD"], {
+        message: "Invalid payment method.",
+      })
+      .optional(),
+
+    paymentStatus: z
+      .enum(["PAID", "PARTIAL", "PENDING"], {
+        message: "Invalid payment status.",
+      })
+      .optional(),
+  })
+  .refine(
+    (data) =>
+      data.paymentMethod !== undefined || data.paymentStatus !== undefined,
+    {
+      message: "At least one payment field is required.",
+    },
+  );
+
+export type UpdateSalePaymentDto = z.infer<typeof updateSalePaymentSchema>;

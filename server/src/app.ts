@@ -13,6 +13,7 @@ import settingRoute from "./modules/settings/routes/setting.route";
 import purchaseRoutes from "./modules/purchase/routes/purchase.route";
 import dashBoardRoutes from "./modules/dashboard/routes/dashboard.routes";
 import salesRoutes from "./modules/sales/routes/sales.route";
+import chatRoutes from "./modules/chat/chat.routes";
 import path from "path";
 import helmet from "helmet";
 import { apiRateLimiter } from "./middleware/rate-limit.middleware";
@@ -45,6 +46,7 @@ app.use("/api/settings", settingRoute);
 app.use("/api/purchases", purchaseRoutes);
 app.use("/api/dashboard", dashBoardRoutes);
 app.use("/api/sales", salesRoutes);
+app.use("/api/chat", chatRoutes);
 app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 // Error Middleware (Always Last)
 app.use(errorMiddleware);
