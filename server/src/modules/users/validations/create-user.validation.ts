@@ -14,6 +14,8 @@ const createUserValidation = z.object({
     .max(20, "Password cannot exceed 20 characters."),
 
   imageUrl: z.url().optional(),
+
+  monthlySalary: z.number().nonnegative().optional(),
 });
 
 export default createUserValidation;

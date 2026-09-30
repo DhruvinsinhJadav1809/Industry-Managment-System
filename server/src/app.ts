@@ -17,6 +17,8 @@ import chatRoutes from "./modules/chat/chat.routes";
 import path from "path";
 import helmet from "helmet";
 import { apiRateLimiter } from "./middleware/rate-limit.middleware";
+import expenseRoutes from "./modules/expense/routes/expense.route";
+import staffRoutes from "./modules/staff/route/staff.route";
 
 const app = express();
 app.use(helmet());
@@ -47,6 +49,8 @@ app.use("/api/purchases", purchaseRoutes);
 app.use("/api/dashboard", dashBoardRoutes);
 app.use("/api/sales", salesRoutes);
 app.use("/api/chat", chatRoutes);
+app.use("/api/expenses", expenseRoutes);
+app.use("/api/staff", staffRoutes);
 app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 // Error Middleware (Always Last)
 app.use(errorMiddleware);

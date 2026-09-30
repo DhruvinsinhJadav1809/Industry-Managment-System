@@ -1,13 +1,7 @@
 import { z } from "zod";
 
 export const chatRequestSchema = z.object({
-  questionId: z.enum([
-    "financial-summary",
-    "total-sales",
-    "total-purchases",
-    "gross-profit",
-    "net-tax",
-  ]),
+  message: z.string().trim().min(1, "Message is required."),
 });
 
 export type ChatRequest = z.infer<typeof chatRequestSchema>;

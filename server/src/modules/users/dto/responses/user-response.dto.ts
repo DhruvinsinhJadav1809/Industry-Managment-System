@@ -3,6 +3,7 @@ export interface UserResponseDto {
   fullName: string;
   email: string;
   roleId: number;
+  monthlySalary: number;
   imageUrl?: string;
   isActive: boolean;
 }

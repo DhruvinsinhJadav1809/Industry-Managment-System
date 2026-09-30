@@ -29,11 +29,12 @@ export function UserEditModal({ user, onClose, onSaved }: UserEditModalProps) {
     email: user.email,
     roleId: user.roleId,
     isActive: user.isActive,
+    monthlySalary: user.monthlySalary ?? 0,
   };
 
   const handleSubmit = async (
     values: UpdateUserFormValues,
-    helpers: { setSubmitting: (v: boolean) => void }
+    helpers: { setSubmitting: (v: boolean) => void },
   ) => {
     setApiError(null);
     try {
@@ -80,7 +81,18 @@ export function UserEditModal({ user, onClose, onSaved }: UserEditModalProps) {
               label="Role"
               value={values.roleId}
               onChange={(e) => setFieldValue("roleId", Number(e.target.value))}
-              options={ROLE_OPTIONS.map((r) => ({ value: r.id, label: r.label }))}
+              options={ROLE_OPTIONS.map((r) => ({
+                value: r.id,
+                label: r.label,
+              }))}
+            />
+
+            <TextField
+              name="monthlySalary"
+              type="number"
+              min="0"
+              step="0.01"
+              label="Monthly salary"
             />
 
             <label className="flex items-center gap-2.5 pt-1 text-sm text-steel-700 dark:text-steel-300">

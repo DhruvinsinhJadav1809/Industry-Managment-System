@@ -5,6 +5,7 @@ export interface UserListItem {
   roleId: number;
   imageUrl: string | null;
   isActive: boolean;
+  monthlySalary?: number | null;
 }
 
 export interface UserListData {
@@ -35,4 +36,5 @@ export interface UpdateUserPayload {
   email: string;
   roleId: number;
   isActive: boolean;
+  monthlySalary?: number | null;
 }

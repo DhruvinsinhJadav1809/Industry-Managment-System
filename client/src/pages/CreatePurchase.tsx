@@ -15,7 +15,7 @@ import { zodToFormikValidate } from "../lib/validations/zodFormik";
 import { purchaseService } from "../services/purchaseService";
 import type { ApiErrorShape } from "../lib/axios";
 import type { CreatePurchasePayload } from "../types/purchase";
-import { PurchaseItemRow } from "../components/purchases/PurchaseItemrow";
+import { PurchaseItemRow } from "../components/purchases/PurchaseItemRow";
 const emptyItem: PurchaseItemFormValues = {
   productId: "",
   productLabel: "",

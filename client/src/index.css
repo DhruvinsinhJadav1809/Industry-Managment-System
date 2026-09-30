@@ -147,3 +147,17 @@ a {
 .toast-enter {
   animation: toast-in 180ms ease-out;
 }
+
+@keyframes iconWiggle {
+  0% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+
+  30% {
+    transform: translate(2px, -2px) rotate(-12deg);
+  }
+
+  100% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+}

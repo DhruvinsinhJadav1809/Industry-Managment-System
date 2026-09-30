@@ -6,9 +6,16 @@ export const updateUserSchema = z.object({
     .min(1, "Full name is required")
     .min(3, "Full name must be at least 3 characters")
     .max(60, "Full name must be under 60 characters"),
-  email: z.string().min(1, "Email is required").email("Enter a valid email address"),
+  email: z
+    .string()
+    .min(1, "Email is required")
+    .email("Enter a valid email address"),
   roleId: z.number({ message: "Select a role" }),
   isActive: z.boolean(),
+  monthlySalary: z.coerce
+    .number()
+    .min(0, "Salary must be 0 or more")
+    .optional(),
 });
 
 export type UpdateUserFormValues = z.infer<typeof updateUserSchema>;

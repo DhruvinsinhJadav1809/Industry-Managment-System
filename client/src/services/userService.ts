@@ -3,6 +3,7 @@ import type { ApiResponse } from "../types/auth";
 import type {
   UpdateUserPayload,
   UserListData,
+  UserListItem,
   UserListParams,
 } from "../types/user";
 
@@ -35,6 +36,12 @@ export const userService = {
    */
   remove: async (id: string) => {
     const { data } = await apiClient.delete<ApiResponse<unknown>>(
+      `/users/${id}`,
+    );
+    return data;
+  },
+  getById: async (id: string) => {
+    const { data } = await apiClient.get<ApiResponse<UserListItem>>(
       `/users/${id}`,
     );
     return data;

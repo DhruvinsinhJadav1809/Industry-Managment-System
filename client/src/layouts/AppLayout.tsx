@@ -64,6 +64,18 @@ const navItems = [
     icon: Receipt,
     roles: [ROLES.ADMIN],
   },
+  {
+    to: "/expenses",
+    label: "Expenses",
+    icon: Receipt,
+    roles: [ROLES.ADMIN],
+  },
+  {
+    to: "/staff",
+    label: "Staff",
+    icon: UsersIcon,
+    roles: [ROLES.ADMIN],
+  },
 ];
 
 function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
@@ -85,20 +97,30 @@ function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
           Menu
         </p>
         {visibleItems.map(({ to, label, icon: Icon }) => {
-          const active = location.pathname === to;
+          const active =
+            location.pathname === to ||
+            (to === "/staff" && location.pathname.startsWith("/staff/")) ||
+            (to === "/sales" && location.pathname.startsWith("/sales/"));
           return (
             <Link
               key={to}
               to={to}
               onClick={onNavigate}
               className={clsx(
-                "flex cursor-pointer items-center gap-2.5 rounded-md px-2.5 py-2 font-body text-sm font-medium transition-colors",
+                "group flex cursor-pointer items-center gap-2.5 rounded-md px-2.5 py-2 font-body text-sm font-medium transition-colors",
                 active
                   ? "bg-steel-800 text-steel-50 dark:bg-amber-400 dark:text-steel-950"
                   : "text-steel-600 hover:bg-steel-100 hover:text-steel-900 dark:text-steel-300 dark:hover:bg-steel-800/60 dark:hover:text-steel-50",
               )}
             >
-              <Icon className="size-4 shrink-0" aria-hidden="true" />
+              <Icon
+                className="
+                  size-4 shrink-0
+                  group-hover:[animation:iconWiggle_1000ms_ease-out]
+                  "
+                aria-hidden="true"
+              />
+
               {label}
             </Link>
           );

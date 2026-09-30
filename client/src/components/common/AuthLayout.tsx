@@ -1,5 +1,4 @@
 import type { ReactNode } from "react";
-import { Activity, Factory, Gauge, ShieldCheck } from "lucide-react";
 import { Logo } from "./Logo";
 
 interface AuthLayoutProps {
@@ -9,12 +8,6 @@ interface AuthLayoutProps {
   children: ReactNode;
   footer: ReactNode;
 }
-
-const stats = [
-  { icon: Factory, label: "Facilities online", value: "128" },
-  { icon: Activity, label: "Avg. uptime", value: "99.4%" },
-  { icon: ShieldCheck, label: "Safety incidents", value: "0" },
-];
 
 export function AuthLayout({
   eyebrow,

@@ -24,6 +24,9 @@ import PurchaseCreate from "./pages/CreatePurchase";
 import { NotificationProvider } from "./context/NotificationContext";
 import SaleCreate from "./pages/SalesCreate";
 import Sales from "./pages/Sales";
+import Expenses from "./pages/Expenses";
+import Staffs from "./pages/Staffs";
+import StaffSalary from "./pages/StaffSalary";
 export default function App() {
   return (
     <ErrorBoundary>
@@ -141,6 +144,36 @@ export default function App() {
                       <ProtectedRoute>
                         <RequireRole allow={[ROLES.ADMIN]}>
                           <SaleCreate />
+                        </RequireRole>
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/expenses"
+                    element={
+                      <ProtectedRoute>
+                        <RequireRole allow={[ROLES.ADMIN]}>
+                          <Expenses />
+                        </RequireRole>
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/staff"
+                    element={
+                      <ProtectedRoute>
+                        <RequireRole allow={[ROLES.ADMIN]}>
+                          <Staffs />
+                        </RequireRole>
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/staff/:staffId/salary"
+                    element={
+                      <ProtectedRoute>
+                        <RequireRole allow={[ROLES.ADMIN]}>
+                          <StaffSalary />
                         </RequireRole>
                       </ProtectedRoute>
                     }

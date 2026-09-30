@@ -8,3 +8,10 @@ export const getFinancialSummary = asyncHandler(async (req, res) => {
     successResponse(result, "Financial summary fetched successfully."),
   );
 });
+export const getProductProfitability = asyncHandler(async (req, res) => {
+  const result = await dashboardService.getProductProfitability();
+
+  return res.json(
+    successResponse(result, "Product profitability fetched successfully."),
+  );
+});

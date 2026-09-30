@@ -62,7 +62,6 @@ export function SaleDetailModal({ saleId, onClose }: SaleDetailModalProps) {
         );
         downloadBlob(response.data, fileName);
       } catch (err) {
-        console.error(err);
         alert("Failed to download PDF");
       } finally {
         setIsLoadingPDF(false);

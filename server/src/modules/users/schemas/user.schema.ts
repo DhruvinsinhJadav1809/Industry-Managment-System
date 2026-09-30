@@ -33,6 +33,12 @@ const userSchema = new Schema<IUser>(
       default: 2,
     },
 
+    monthlySalary: {
+      type: Number,
+      min: 0,
+      default: 0,
+    },
+
     imageUrl: {
       type: String,
     },

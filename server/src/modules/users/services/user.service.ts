@@ -147,6 +147,8 @@ export const updateUser = async (
   existingUser.fullName = data.fullName;
   existingUser.email = data.email.trim().toLowerCase();
   existingUser.roleId = data.roleId;
+  if (data.monthlySalary !== undefined)
+    existingUser.monthlySalary = data.monthlySalary;
   existingUser.imageUrl = data.imageUrl;
   existingUser.isActive = data.isActive;
   existingUser.updatedBy = new Types.ObjectId(currentUserId);

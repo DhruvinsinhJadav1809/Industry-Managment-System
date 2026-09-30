@@ -13,6 +13,7 @@ interface Column {
 const columns: Column[] = [
   { key: "fullName", label: "Name", sortable: true },
   { key: "email", label: "Email", sortable: true },
+  { key: "monthlySalary", label: "Salary", sortable: false },
   { key: "roleId", label: "Role", sortable: false },
   { key: "isActive", label: "Status", sortable: false },
 ];
@@ -26,6 +27,18 @@ interface UserTableProps {
   onEdit: (user: UserListItem) => void;
   onDelete: (user: UserListItem) => void;
   currentUserId?: string;
+}
+
+function formatCurrency(amount: number | null | undefined) {
+  if (typeof amount !== "number" || Number.isNaN(amount)) {
+    return "—";
+  }
+
+  return new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: "INR",
+    maximumFractionDigits: 2,
+  }).format(amount);
 }
 
 function roleTone(roleId: number) {
@@ -69,7 +82,10 @@ export function UserTable({
                         <ArrowDown className="size-3" aria-hidden="true" />
                       )
                     ) : (
-                      <ArrowUpDown className="size-3 opacity-40" aria-hidden="true" />
+                      <ArrowUpDown
+                        className="size-3 opacity-40"
+                        aria-hidden="true"
+                      />
                     )}
                   </button>
                 ) : (
@@ -77,7 +93,10 @@ export function UserTable({
                 )}
               </th>
             ))}
-            <th scope="col" className="px-4 py-3 text-right font-mono text-[11px] font-semibold uppercase tracking-wider text-steel-500 dark:text-steel-400">
+            <th
+              scope="col"
+              className="px-4 py-3 text-right font-mono text-[11px] font-semibold uppercase tracking-wider text-steel-500 dark:text-steel-400"
+            >
               Actions
             </th>
           </tr>
@@ -85,7 +104,10 @@ export function UserTable({
         <tbody>
           {isLoading ? (
             Array.from({ length: 5 }).map((_, i) => (
-              <tr key={i} className="border-b border-steel-100 dark:border-steel-800/60">
+              <tr
+                key={i}
+                className="border-b border-steel-100 dark:border-steel-800/60"
+              >
                 {Array.from({ length: 5 }).map((__, j) => (
                   <td key={j} className="px-4 py-4">
                     <div className="h-3.5 w-full max-w-[140px] animate-pulse rounded bg-steel-100 dark:bg-steel-800" />
@@ -119,6 +141,9 @@ export function UserTable({
                 <td className="px-4 py-3.5 text-steel-600 dark:text-steel-300">
                   {user.email}
                 </td>
+                <td className="px-4 py-3.5 font-medium text-steel-800 dark:text-steel-100">
+                  {formatCurrency(user.monthlySalary)}
+                </td>
                 <td className="px-4 py-3.5">
                   <Badge tone={roleTone(user.roleId)}>
                     {ROLE_LABELS[user.roleId] ?? "Unknown"}
@@ -148,7 +173,7 @@ export function UserTable({
                         "rounded-md p-1.5 transition-colors",
                         user.id === currentUserId
                           ? "cursor-not-allowed text-steel-300 dark:text-steel-700"
-                          : "text-steel-500 hover:bg-red-50 hover:text-red-600 dark:text-steel-400 dark:hover:bg-red-500/10 dark:hover:text-red-400"
+                          : "text-steel-500 hover:bg-red-50 hover:text-red-600 dark:text-steel-400 dark:hover:bg-red-500/10 dark:hover:text-red-400",
                       )}
                     >
                       <Trash2 className="size-4" aria-hidden="true" />

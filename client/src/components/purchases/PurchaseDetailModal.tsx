@@ -65,7 +65,6 @@ export function PurchaseDetailModal({
         );
         downloadBlob(response.data, fileName);
       } catch (err) {
-        console.error(err);
         alert("Failed to download PDF");
       } finally {
         setIsLoadingPDF(false);

@@ -4,7 +4,8 @@ import type { ChatAnswer, ChatRequestPayload } from "../types/chat";
 
 export const chatService = {
   /** POST /chat */
-  ask: async (payload: ChatRequestPayload) => {
+  ask: async (message: string) => {
+    const payload: ChatRequestPayload = { message };
     const { data } = await apiClient.post<ApiResponse<ChatAnswer>>(
       "/chat",
       payload,

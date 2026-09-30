@@ -5,6 +5,7 @@ export interface IUser {
   email: string;
   password: string;
   roleId: number;
+  monthlySalary?: number;
   imageUrl?: string;
   isActive: boolean;
   isDeleted: boolean;

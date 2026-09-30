@@ -15,6 +15,8 @@ export const updateUserSchema = z.object({
 
   roleId: z.number().int().positive("Role is required."),
 
+  monthlySalary: z.number().nonnegative().optional(),
+
   imageUrl: z
     .string()
     .trim()

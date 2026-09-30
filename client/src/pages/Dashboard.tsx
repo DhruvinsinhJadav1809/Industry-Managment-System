@@ -5,6 +5,7 @@ import { LowStockPanel } from "../components/dashboard/LowStockPanel";
 import { InventoryPanel } from "../components/dashboard/InventoryPanel";
 import { PurchaseTrendChart } from "../components/dashboard/PurchaseTrendChart";
 import { FinancialSummaryPanel } from "../components/dashboard/Financialsummarypanel";
+import { ProductProfitabilityChart } from "../components/dashboard/Productprofitabilitychart";
 export default function Dashboard() {
   const { user } = useAuth();
 
@@ -19,7 +20,10 @@ export default function Dashboard() {
             chart to admins — everyone else would just hit a 403. */}
         {user?.roleId === ROLES.ADMIN && (
           <>
-            <FinancialSummaryPanel /> <PurchaseTrendChart />
+            <FinancialSummaryPanel />
+            <ProductProfitabilityChart />
+
+            <PurchaseTrendChart />
           </>
         )}
 

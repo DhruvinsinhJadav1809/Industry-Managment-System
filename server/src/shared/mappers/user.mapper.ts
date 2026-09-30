@@ -6,6 +6,7 @@ export const toUserResponseDto = (user: IUserDocument): UserResponseDto => ({
   fullName: user.fullName,
   email: user.email,
   roleId: user.roleId,
+  monthlySalary: user.monthlySalary ?? 0,
   imageUrl: user.imageUrl,
   isActive: user.isActive,
 });

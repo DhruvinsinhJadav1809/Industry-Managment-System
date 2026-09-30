@@ -4,7 +4,7 @@ export interface ChatRequestDto {
   questionId: ChatQuestionId;
 }
 export interface ChatResponseDto {
-  questionId: ChatQuestionId;
+  questionId: ChatQuestionId | null;
   question: string;
   answer: string;
 }

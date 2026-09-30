@@ -1,7 +1,6 @@
-import { Bot, MessageCircle, X } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { Bot, MessageCircle, Send, X } from "lucide-react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import { clsx } from "clsx";
-import { chatQuestions } from "../../constants/chatQuestion";
 import { chatService } from "../../services/chatService";
 import type { ApiErrorShape } from "../../lib/axios";
 
@@ -15,29 +14,35 @@ interface ThreadMessage {
 export function ChatWidget() {
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<ThreadMessage[]>([]);
-  const [pendingQuestionId, setPendingQuestionId] = useState<string | null>(
-    null,
-  );
+  const [inputValue, setInputValue] = useState("");
+  const [isPending, setIsPending] = useState(false);
   const threadRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     threadRef.current?.scrollTo({
       top: threadRef.current.scrollHeight,
       behavior: "smooth",
     });
-  }, [messages, pendingQuestionId]);
+  }, [messages, isPending]);
 
-  const handleAsk = async (questionId: string, questionText: string) => {
-    if (pendingQuestionId) return; // one question in flight at a time
+  useEffect(() => {
+    if (open) inputRef.current?.focus();
+  }, [open]);
+
+  const handleSend = async (text: string) => {
+    const trimmed = text.trim();
+    if (!trimmed || isPending) return;
 
     setMessages((prev) => [
       ...prev,
-      { id: `${Date.now()}-u`, role: "user", text: questionText },
+      { id: `${Date.now()}-u`, role: "user", text: trimmed },
     ]);
-    setPendingQuestionId(questionId);
+    setInputValue("");
+    setIsPending(true);
 
     try {
-      const res = await chatService.ask({ questionId });
+      const res = await chatService.ask(trimmed);
       setMessages((prev) => [
         ...prev,
         { id: `${Date.now()}-b`, role: "bot", text: res.data.answer },
@@ -53,15 +58,19 @@ export function ChatWidget() {
         },
       ]);
     } finally {
-      setPendingQuestionId(null);
+      setIsPending(false);
     }
+  };
+
+  const handleSubmit = (e: FormEvent) => {
+    e.preventDefault();
+    handleSend(inputValue);
   };
 
   return (
     <>
       {open && (
         <div className="fixed bottom-24 right-6 z-40 flex h-[28rem] max-h-[70vh] w-80 flex-col overflow-hidden rounded-lg border border-steel-200 bg-white shadow-2xl dark:border-steel-700 dark:bg-steel-900 sm:w-96">
-          {/* Header */}
           <div className="flex items-center justify-between border-b border-steel-800 bg-steel-800 px-4 py-3 dark:border-steel-950 dark:bg-steel-950">
             <div className="flex items-center gap-2">
               <Bot className="size-4 text-amber-400" aria-hidden="true" />
@@ -79,16 +88,29 @@ export function ChatWidget() {
             </button>
           </div>
 
-          {/* Message thread */}
           <div
             ref={threadRef}
             className="flex-1 space-y-3 overflow-y-auto px-4 py-4"
           >
-            {messages.length === 0 && (
-              <p className="text-center text-xs leading-relaxed text-steel-400 dark:text-steel-500">
-                Ask about your finances — pick a question below to get started.
-              </p>
-            )}
+            {/* {messages.length === 0 && (
+              <div className="space-y-3 text-center">
+                <p className="text-xs leading-relaxed text-steel-400 dark:text-steel-500">
+                  Ask about your finances — sales, purchases, profit, or tax.
+                </p>
+                <div className="flex flex-wrap justify-center gap-1.5">
+                  {chatQuestions.map((q) => (
+                    <button
+                      key={q.id}
+                      type="button"
+                      onClick={() => handleSend(q.question)}
+                      className="cursor-pointer rounded-full border border-steel-200 px-3 py-1.5 text-xs font-medium text-steel-600 transition-colors hover:bg-steel-100 hover:text-steel-900 dark:border-steel-700 dark:text-steel-300 dark:hover:bg-steel-800 dark:hover:text-steel-50"
+                    >
+                      {q.question}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )} */}
 
             {messages.map((m) => (
               <div
@@ -113,7 +135,7 @@ export function ChatWidget() {
               </div>
             ))}
 
-            {pendingQuestionId && (
+            {isPending && (
               <div className="flex justify-start">
                 <div className="flex items-center gap-1.5 rounded-lg bg-steel-100 px-3 py-2.5 dark:bg-steel-800">
                   <span className="size-1.5 animate-bounce rounded-full bg-steel-400 [animation-delay:-0.3s]" />
@@ -124,26 +146,46 @@ export function ChatWidget() {
             )}
           </div>
 
-          {/* Fixed quick-question chips (phase 1 — no free-text input yet) */}
-          <div className="border-t border-steel-100 p-3 dark:border-steel-800">
-            <div className="flex flex-wrap gap-1.5">
+          {/* {messages.length > 0 && (
+            <div className="flex flex-wrap gap-1.5 border-t border-steel-100 px-3 pt-3 dark:border-steel-800">
               {chatQuestions.map((q) => (
                 <button
                   key={q.id}
                   type="button"
-                  onClick={() => handleAsk(q.id, q.question)}
-                  disabled={Boolean(pendingQuestionId)}
-                  className="cursor-pointer rounded-full border border-steel-200 px-3 py-1.5 text-xs font-medium text-steel-600 transition-colors hover:bg-steel-100 hover:text-steel-900 disabled:cursor-not-allowed disabled:opacity-50 dark:border-steel-700 dark:text-steel-300 dark:hover:bg-steel-800 dark:hover:text-steel-50"
+                  onClick={() => handleSend(q.question)}
+                  disabled={isPending}
+                  className="cursor-pointer rounded-full border border-steel-200 px-2.5 py-1 text-[11px] font-medium text-steel-600 transition-colors hover:bg-steel-100 hover:text-steel-900 disabled:cursor-not-allowed disabled:opacity-50 dark:border-steel-700 dark:text-steel-300 dark:hover:bg-steel-800 dark:hover:text-steel-50"
                 >
                   {q.question}
                 </button>
               ))}
             </div>
-          </div>
+          )} */}
+
+          <form
+            onSubmit={handleSubmit}
+            className="flex items-center gap-2 border-t border-steel-100 p-3 dark:border-steel-800"
+          >
+            <input
+              ref={inputRef}
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
+              placeholder="Ask a question…"
+              disabled={isPending}
+              className="w-full rounded-md border border-steel-200 bg-white px-3 py-2 text-sm text-steel-900 outline-none transition-colors placeholder:text-steel-400 focus:border-steel-500 disabled:opacity-60 dark:border-steel-700 dark:bg-steel-900 dark:text-steel-50 dark:placeholder:text-steel-500 dark:focus:border-amber-400/70"
+            />
+            <button
+              type="submit"
+              disabled={isPending || !inputValue.trim()}
+              aria-label="Send"
+              className="flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-md bg-steel-800 text-steel-50 transition-colors hover:bg-steel-900 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-amber-400 dark:text-steel-950"
+            >
+              <Send className="size-4" aria-hidden="true" />
+            </button>
+          </form>
         </div>
       )}
 
-      {/* Floating toggle button */}
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
