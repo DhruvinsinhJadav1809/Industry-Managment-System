@@ -15,3 +15,8 @@ export interface SendNotificationDto {
 
   createdBy: string;
 }
+
+export interface GetNotificationsQueryDto {
+  page: number;
+  pageSize: number;
+}

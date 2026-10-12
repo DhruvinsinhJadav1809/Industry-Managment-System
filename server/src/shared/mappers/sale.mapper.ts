@@ -7,6 +7,7 @@ import { ISaleDocument } from "../../modules/sales/types/sales.types";
 export const toSaleResponseDto = (sale: ISaleDocument): SaleResponseDto => {
   return {
     id: sale._id.toString(),
+    orderId: sale.orderId?.toString(),
 
     saleNumber: sale.saleNumber,
     invoiceNumber: sale.invoiceNumber,

@@ -1,4 +1,3 @@
-import { BarChart3 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import {
   Bar,
@@ -11,6 +10,7 @@ import {
 } from "recharts";
 import { clsx } from "clsx";
 import { Alert } from "../common";
+import { DashboardSection } from "./DashboardSection";
 import { purchaseService } from "../../services/purchaseService";
 import type { ApiErrorShape } from "../../lib/axios";
 import type { PurchaseListItem } from "../../types/purchase";
@@ -94,22 +94,10 @@ export function PurchaseTrendChart() {
   }, [purchases, period]);
 
   return (
-    <div className="corner-frame rounded-lg border border-steel-200 bg-white/70 p-6 dark:border-steel-800 dark:bg-steel-900/40">
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-2.5">
-          <div className="flex size-8 items-center justify-center rounded-md bg-steel-800 text-steel-50 dark:bg-amber-400 dark:text-steel-950">
-            <BarChart3 className="size-4" aria-hidden="true" />
-          </div>
-          <div>
-            <h2 className="font-display text-base font-bold text-steel-900 dark:text-steel-50">
-              Purchase spend
-            </h2>
-            <p className="text-xs text-steel-500 dark:text-steel-400">
-              Grand total by period
-            </p>
-          </div>
-        </div>
-
+    <DashboardSection
+      title="Purchase spend"
+      description="Grand total by period"
+      trailing={
         <div className="flex rounded-md border border-steel-200 p-0.5 dark:border-steel-700">
           {(["quarterly", "yearly"] as const).map((opt) => (
             <button
@@ -127,8 +115,8 @@ export function PurchaseTrendChart() {
             </button>
           ))}
         </div>
-      </div>
-
+      }
+    >
       {isLoading ? (
         <div className="flex h-64 items-center justify-center text-sm text-steel-400 dark:text-steel-500">
           Loading chart…
@@ -176,6 +164,6 @@ export function PurchaseTrendChart() {
           </ResponsiveContainer>
         </div>
       )}
-    </div>
+    </DashboardSection>
   );
 }

@@ -3,8 +3,11 @@ import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { clsx } from "clsx";
 import { useNotifications } from "../../context/NotificationContext";
+import { useAuth } from "../../context/AuthContext";
+import { ROLES } from "../../constants/roles";
 
 export function NotificationBell() {
+  const { user } = useAuth();
   const { notifications, unreadCount, markAsRead, markAllAsRead } =
     useNotifications();
   const [open, setOpen] = useState(false);
@@ -63,6 +66,10 @@ export function NotificationBell() {
               </p>
             ) : (
               notifications.map((n) => {
+                const isCustomerCreateNotificationLink =
+                  user?.roleId === ROLES.CUSTOMER &&
+                  n.actionUrl?.split(/[?#]/, 1)[0].replace(/\/$/, "") ===
+                    "/notifications/new";
                 const body = (
                   <div
                     className={clsx(
@@ -82,7 +89,7 @@ export function NotificationBell() {
                   </div>
                 );
 
-                return n.actionUrl ? (
+                return n.actionUrl && !isCustomerCreateNotificationLink ? (
                   <Link
                     key={n.id}
                     to={n.actionUrl}
@@ -99,7 +106,7 @@ export function NotificationBell() {
                     key={n.id}
                     type="button"
                     onClick={() => markAsRead(n.id)}
-                    className="block w-full cursor-pointer text-left hover:bg-steel-50 dark:hover:bg-steel-800/60"
+                    className="block w-full  text-left hover:bg-steel-50 dark:hover:bg-steel-800/60"
                   >
                     {body}
                   </button>

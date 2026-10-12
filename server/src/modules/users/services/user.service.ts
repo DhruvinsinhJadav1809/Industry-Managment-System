@@ -36,7 +36,7 @@ export const createUser = async (data: CreateUserDto) => {
   const user = await UserModel.create({
     ...data,
     password: hashedPassword,
-    roleId: data.roleId ?? UserRole.Employee,
+    roleId: data.roleId ?? UserRole.Customer,
   });
   try {
     const loginLink = `${process.env.CLIENT_URL}/login`;

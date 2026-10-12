@@ -15,13 +15,21 @@ const saleItemSchema = z.object({
 });
 
 export const createSaleSchema = z.object({
+  orderId: objectIdSchema.optional(),
   saleDate: z.coerce.date(),
 
   customerName: z.string().trim().min(1, "Customer name is required."),
 
   customerPhone: z.string().trim().optional(),
 
-  items: z.array(saleItemSchema).min(1, "Sale must contain at least one item."),
+  items: z
+    .array(saleItemSchema)
+    .min(1, "Sale must contain at least one item.")
+    .refine(
+      (items) =>
+        new Set(items.map((item) => item.productId)).size === items.length,
+      "Each product can only appear once in a sale.",
+    ),
 
   discountAmount: z
     .number()

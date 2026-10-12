@@ -1,5 +1,5 @@
 import { Schema, model } from "mongoose";
-import { ICounterDocument } from "./counter.types";
+import { ICounterDocument } from "../types/counter.types";
 
 const counterSchema = new Schema<ICounterDocument>({
   _id: {

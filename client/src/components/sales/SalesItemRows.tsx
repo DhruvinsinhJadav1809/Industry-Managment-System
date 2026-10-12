@@ -17,6 +17,9 @@ interface SaleItemRowProps {
   onChange: (index: number, patch: Partial<SaleItemFormValues>) => void;
   onRemove: (index: number) => void;
   canRemove: boolean;
+  allowProductChange?: boolean;
+  maxQuantity?: number;
+  quantityDisabled?: boolean;
 }
 
 function numberInputClasses(hasError: boolean) {
@@ -34,6 +37,9 @@ export function SaleItemRow({
   onChange,
   onRemove,
   canRemove,
+  allowProductChange = true,
+  maxQuantity,
+  quantityDisabled = false,
 }: SaleItemRowProps) {
   const lineTotal =
     item.quantity && item.rate
@@ -55,12 +61,23 @@ export function SaleItemRow({
   return (
     <div className="grid grid-cols-12 gap-3 border-b border-steel-100 py-4 last:border-0 dark:border-steel-800/60">
       <div className="col-span-12 sm:col-span-4">
-        <ProductPicker
-          value={item.productId}
-          initialLabel={item.productLabel}
-          onChange={handleProductSelect}
-          error={error?.productId}
-        />
+        {allowProductChange ? (
+          <ProductPicker
+            value={item.productId}
+            initialLabel={item.productLabel}
+            onChange={handleProductSelect}
+            error={error?.productId}
+          />
+        ) : (
+          <div className="flex h-full flex-col justify-center">
+            <span className="mb-1.5 font-mono text-[10px] uppercase tracking-wider text-steel-500 dark:text-steel-400">
+              Product
+            </span>
+            <span className="truncate text-sm font-medium text-steel-900 dark:text-steel-50">
+              {item.productLabel}
+            </span>
+          </div>
+        )}
       </div>
 
       <div className="col-span-4 sm:col-span-2">
@@ -70,14 +87,19 @@ export function SaleItemRow({
         <input
           type="number"
           min="0"
+          max={maxQuantity}
           step="1"
           value={item.quantity || ""}
+          disabled={quantityDisabled}
           onChange={(e) =>
             onChange(index, {
-              quantity: e.target.value === "" ? 0 : Number(e.target.value),
+              quantity:
+                e.target.value === ""
+                  ? 0
+                  : Math.min(Number(e.target.value), maxQuantity ?? Infinity),
             })
           }
-          className={numberInputClasses(Boolean(error?.quantity))}
+          className={`${numberInputClasses(Boolean(error?.quantity))} disabled:cursor-not-allowed disabled:opacity-70`}
         />
         {error?.quantity && (
           <p className="mt-1 text-[11px] text-red-600 dark:text-red-400">

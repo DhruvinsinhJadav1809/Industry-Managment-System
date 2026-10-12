@@ -1,5 +1,9 @@
-import axios, { AxiosError } from "axios";
-import { TOKEN_STORAGE_KEY, USER_STORAGE_KEY } from "../constants/storageKeys";
+import axios, { AxiosError, type InternalAxiosRequestConfig } from "axios";
+import {
+  LEGACY_REFRESH_TOKEN_STORAGE_KEY,
+  TOKEN_STORAGE_KEY,
+  USER_STORAGE_KEY,
+} from "../constants/storageKeys";
 
 export { TOKEN_STORAGE_KEY };
 
@@ -9,7 +13,27 @@ export const apiClient = axios.create({
     "Content-Type": "application/json",
   },
   timeout: 15000,
+  withCredentials: true,
 });
+
+interface RetryableRequestConfig extends InternalAxiosRequestConfig {
+  _retry?: boolean;
+}
+
+interface RefreshResponse {
+  data: {
+    accessToken: string;
+  };
+}
+
+const refreshClient = axios.create({
+  baseURL: import.meta.env.VITE_API_BASE_URL,
+  headers: { "Content-Type": "application/json" },
+  timeout: 15000,
+  withCredentials: true,
+});
+
+let refreshRequest: Promise<string> | null = null;
 
 // Attach auth token to every request, if present.
 apiClient.interceptors.request.use((config) => {
@@ -45,7 +69,7 @@ interface BackendErrorEnvelope {
 // an array of strings, and an array of { field, message } — flatten any of
 // them into { field: message } for forms to key off of.
 function normalizeFieldErrors(
-  errors: BackendErrorEnvelope["errors"]
+  errors: BackendErrorEnvelope["errors"],
 ): Record<string, string> | undefined {
   if (!errors) return undefined;
 
@@ -63,16 +87,17 @@ function normalizeFieldErrors(
   return errors;
 }
 
-// If a request comes back 401 while we believe there's an active session,
-// the token is expired/invalid — clear it and bounce to Login. This does
-// NOT fire for a failed login attempt itself, since there's no stored
-// token yet in that case; that 401 just flows through as a normal error
-// for the Login page to show inline.
+// Clear an active session after refresh fails or a retried request is
+// rejected. Anonymous 401s still flow through as normal API errors.
 function handleSessionExpired() {
-  const hadToken = Boolean(localStorage.getItem(TOKEN_STORAGE_KEY));
-  if (!hadToken) return;
+  const hadSession = Boolean(
+    localStorage.getItem(TOKEN_STORAGE_KEY) ||
+    localStorage.getItem(USER_STORAGE_KEY),
+  );
+  if (!hadSession) return;
 
   localStorage.removeItem(TOKEN_STORAGE_KEY);
+  localStorage.removeItem(LEGACY_REFRESH_TOKEN_STORAGE_KEY);
   localStorage.removeItem(USER_STORAGE_KEY);
 
   if (window.location.pathname !== "/login") {
@@ -80,15 +105,57 @@ function handleSessionExpired() {
   }
 }
 
+function refreshAccessToken(): Promise<string> {
+  if (!refreshRequest) {
+    refreshRequest = refreshClient
+      .post<RefreshResponse>("/auth/refresh", undefined, {
+        withCredentials: true,
+      })
+      .then(({ data }) => {
+        const { accessToken } = data.data;
+        if (!accessToken)
+          throw new Error("Refresh response has no access token");
+        localStorage.setItem(TOKEN_STORAGE_KEY, accessToken);
+        return accessToken;
+      })
+      .catch((refreshError: unknown) => {
+        handleSessionExpired();
+        throw refreshError;
+      })
+      .finally(() => {
+        refreshRequest = null;
+      });
+  }
+
+  return refreshRequest;
+}
+
 // Normalize backend error responses into one predictable shape.
 apiClient.interceptors.response.use(
   (response) => response,
-  (error: AxiosError<BackendErrorEnvelope>) => {
+  async (error: AxiosError<BackendErrorEnvelope>) => {
     const status = error.response?.status;
     const data = error.response?.data;
 
     if (status === 401) {
-      handleSessionExpired();
+      const request = error.config as RetryableRequestConfig | undefined;
+      const requestUrl = request?.url ?? "";
+      const isAuthRequest = /\/auth\/(login|refresh|logout)(?:\?|$)/.test(
+        requestUrl,
+      );
+
+      if (request && !request._retry && !isAuthRequest) {
+        request._retry = true;
+        try {
+          const accessToken = await refreshAccessToken();
+          request.headers.Authorization = `Bearer ${accessToken}`;
+          return apiClient(request);
+        } catch {
+          // Refresh failure clears the session and redirects to Login.
+        }
+      } else if (request?._retry && !isAuthRequest) {
+        handleSessionExpired();
+      }
     }
 
     const normalized: ApiErrorShape = {
@@ -102,5 +169,5 @@ apiClient.interceptors.response.use(
     };
 
     return Promise.reject(normalized);
-  }
+  },
 );

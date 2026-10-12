@@ -1,4 +1,5 @@
 export interface CreateSaleDto {
+  orderId?: string;
   saleDate: Date;
   customerName: string;
   customerPhone?: string;

@@ -6,6 +6,7 @@ export interface SaleItemInput {
 }
 
 export interface CreateSalePayload {
+  orderId?: string;
   saleDate: string; // ISO datetime
   customerName: string;
   customerPhone: string;

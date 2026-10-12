@@ -21,5 +21,7 @@ export interface IUser {
   resetPasswordToken?: string | null;
 
   resetPasswordExpiresAt?: Date | null;
+
+  refreshTokenHash?: string | null;
 }
 export type IUserDocument = HydratedDocument<IUser>;

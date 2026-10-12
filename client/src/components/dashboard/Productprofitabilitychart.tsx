@@ -11,6 +11,7 @@ import {
   YAxis,
 } from "recharts";
 import { Alert } from "../common";
+import { DashboardSection } from "./DashboardSection";
 import { productProfitabilityService } from "../../services/productProfitabilityService";
 import type { ApiErrorShape } from "../../lib/axios";
 import type { ProductProfitabilityItem } from "../../types/productProfitability";
@@ -87,16 +88,26 @@ export function ProductProfitabilityChart() {
 
   if (isLoading) {
     return (
-      <div className="corner-frame rounded-lg border border-steel-200 bg-white/70 p-6 dark:border-steel-800 dark:bg-steel-900/40">
+      <DashboardSection
+        title="Product profitability"
+        description="Profit by product"
+      >
         <div className="flex h-64 items-center justify-center text-sm text-steel-400 dark:text-steel-500">
           Loading product profitability…
         </div>
-      </div>
+      </DashboardSection>
     );
   }
 
   if (loadError) {
-    return <Alert variant="error">{loadError}</Alert>;
+    return (
+      <DashboardSection
+        title="Product profitability"
+        description="Profit by product"
+      >
+        <Alert variant="error">{loadError}</Alert>
+      </DashboardSection>
+    );
   }
 
   // Height scales with the number of products so bars stay readable
@@ -104,23 +115,15 @@ export function ProductProfitabilityChart() {
   const chartHeight = Math.max(220, products.length * 44);
 
   return (
-    <div className="corner-frame rounded-lg border border-steel-200 bg-white/70 p-6 dark:border-steel-800 dark:bg-steel-900/40">
-      <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-2.5">
-          <div className="flex size-8 items-center justify-center rounded-md bg-steel-800 text-steel-50 dark:bg-amber-400 dark:text-steel-950">
-            <TrendingUp className="size-4" aria-hidden="true" />
-          </div>
-          <div>
-            <h2 className="font-display text-base font-bold text-steel-900 dark:text-steel-50">
-              Product profitability
-            </h2>
-            <p className="text-xs text-steel-500 dark:text-steel-400">
-              Profit by product
-            </p>
-          </div>
+    <DashboardSection
+      title="Product profitability"
+      description="Profit by product"
+      trailing={
+        <div className="flex size-8 items-center justify-center rounded-md bg-steel-800 text-steel-50 dark:bg-amber-400 dark:text-steel-950">
+          <TrendingUp className="size-4" aria-hidden="true" />
         </div>
-      </div>
-
+      }
+    >
       {products.length === 0 ? (
         <div className="flex h-40 items-center justify-center text-sm text-steel-400 dark:text-steel-500">
           No product activity yet.
@@ -183,6 +186,6 @@ export function ProductProfitabilityChart() {
           Margin &lt; 15%
         </span>
       </div>
-    </div>
+    </DashboardSection>
   );
 }

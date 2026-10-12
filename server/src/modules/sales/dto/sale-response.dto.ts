@@ -10,6 +10,7 @@ export interface SaleItemResponseDto {
 
 export interface SaleResponseDto {
   id: string;
+  orderId?: string;
   saleNumber: string;
   invoiceNumber: string;
   saleDate: Date;

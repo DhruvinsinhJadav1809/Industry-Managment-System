@@ -17,6 +17,13 @@ const inventorySchema = new Schema<IInventoryDocument>(
       min: 0,
     },
 
+    reservedQuantity: {
+      type: Number,
+      required: true,
+      default: 0,
+      min: 0,
+    },
+
     minimumStock: {
       type: Number,
       required: true,

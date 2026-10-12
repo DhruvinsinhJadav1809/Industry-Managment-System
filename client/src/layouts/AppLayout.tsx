@@ -9,7 +9,10 @@ import {
   Users as UsersIcon,
   X,
   Wallet,
-  Receipt,
+  BellRing,
+  IndianRupeeIcon,
+  NotebookPen,
+  ClipboardList,
 } from "lucide-react";
 import { useState, type ReactNode } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
@@ -28,6 +31,13 @@ const navItems = [
     roles: null as number[] | null,
   },
   { to: "/users", label: "Users", icon: UsersIcon, roles: [ROLES.ADMIN] },
+  {
+    to: "/orders",
+    label: "Order summary",
+    icon: ClipboardList,
+    roles: [ROLES.CUSTOMER],
+  },
+
   {
     to: "/departments",
     label: "Departments",
@@ -61,19 +71,25 @@ const navItems = [
   {
     to: "/sales",
     label: "Sales",
-    icon: Receipt,
+    icon: IndianRupeeIcon,
     roles: [ROLES.ADMIN],
   },
   {
     to: "/expenses",
     label: "Expenses",
-    icon: Receipt,
+    icon: NotebookPen,
     roles: [ROLES.ADMIN],
   },
   {
     to: "/staff",
     label: "Staff",
     icon: UsersIcon,
+    roles: [ROLES.ADMIN],
+  },
+  {
+    to: "/notifications/new",
+    label: "Notifications",
+    icon: BellRing,
     roles: [ROLES.ADMIN],
   },
 ];
@@ -99,6 +115,8 @@ function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
         {visibleItems.map(({ to, label, icon: Icon }) => {
           const active =
             location.pathname === to ||
+            (to === "/notifications/new" &&
+              location.pathname.startsWith("/notifications")) ||
             (to === "/staff" && location.pathname.startsWith("/staff/")) ||
             (to === "/sales" && location.pathname.startsWith("/sales/"));
           return (
@@ -198,7 +216,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
               </div>
             )}
             <ThemeToggle />
-            {user?.roleId === ROLES.STAFF && <NotificationBell />}
+            {user && <NotificationBell />}
             <button
               onClick={handleLogout}
               aria-label="Sign out"

@@ -1,7 +1,7 @@
 import { Formik, Form } from "formik";
 import { ArrowLeft, Plus, Save } from "lucide-react";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Alert, Button, Select, TextField } from "../components/common";
 import { SaleItemRow } from "../components/sales/SalesItemRows";
 import { AppLayout } from "../layouts/AppLayout";
@@ -19,6 +19,14 @@ import { zodToFormikValidate } from "../lib/validations/zodFormik";
 import { saleService } from "../services/salesService";
 import type { ApiErrorShape } from "../lib/axios";
 import type { CreateSalePayload } from "../types/sale";
+import { orderService } from "../services/orderService";
+import type { CustomerOrder } from "../types/order";
+import {
+  getOrderCustomerName,
+  getOrderCustomerPhone,
+  getOrderProductId,
+  getOrderProductName,
+} from "../lib/orderUtils";
 
 const emptyItem: SaleItemFormValues = {
   productId: "",
@@ -48,11 +56,34 @@ function money(n: number) {
 
 export default function SaleCreate() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const order = (location.state as { order?: CustomerOrder } | null)?.order;
+  const [billingOrder, setBillingOrder] = useState(order);
   const toast = useToast();
   const [apiError, setApiError] = useState<string | null>(null);
   // Stable per-row ids, independent of array index, so a ProductPicker row's
   // internal state doesn't get reused for the wrong item after add/remove.
-  const [rowKeys, setRowKeys] = useState<string[]>([crypto.randomUUID()]);
+  const [rowKeys, setRowKeys] = useState<string[]>(
+    () => order?.items.map(() => crypto.randomUUID()) ?? [crypto.randomUUID()],
+  );
+  const formInitialValues: CreateSaleFormValues = order
+    ? {
+        ...initialValues,
+        customerName: getOrderCustomerName(order),
+        customerPhone: getOrderCustomerPhone(order),
+        items: order.items.map((item) => ({
+          productId: getOrderProductId(item.productId),
+          productLabel: getOrderProductName(item),
+          quantity:
+            order.status === "APPROVED"
+              ? item.approvedQuantity
+              : item.requestedQuantity,
+          rate: item.unitPrice,
+          gstPercentage: 0,
+        })),
+        notes: `Order ${order.orderNumber}`,
+      }
+    : initialValues;
 
   const handleSubmit = async (
     values: CreateSaleFormValues,
@@ -64,6 +95,7 @@ export default function SaleCreate() {
     setApiError(null);
     try {
       const payload: CreateSalePayload = {
+        ...(billingOrder ? { orderId: billingOrder._id } : {}),
         saleDate: new Date(values.saleDate).toISOString(),
         customerName: values.customerName,
         customerPhone: values.customerPhone,
@@ -80,8 +112,26 @@ export default function SaleCreate() {
         paymentStatus: values.paymentStatus,
         notes: values.notes || undefined,
       };
+      if (billingOrder?.status === "PENDING") {
+        const approval = await orderService.accept(
+          billingOrder._id,
+          billingOrder.items.map((item) => ({
+            productId: getOrderProductId(item.productId),
+            approvedQuantity:
+              values.items.find(
+                (saleItem) =>
+                  saleItem.productId === getOrderProductId(item.productId),
+              )?.quantity ?? 0,
+          })),
+        );
+        setBillingOrder(approval.data);
+      } else if (billingOrder?.status !== "APPROVED") {
+        throw new Error("This order is no longer available for billing.");
+      }
       await saleService.create(payload);
-      toast.success("Sale created.");
+      toast.success(
+        billingOrder ? "Order billed successfully." : "Sale created.",
+      );
       navigate("/sales");
     } catch (err) {
       const apiErr = err as ApiErrorShape;
@@ -96,7 +146,7 @@ export default function SaleCreate() {
     <AppLayout>
       <button
         type="button"
-        onClick={() => navigate("/sales")}
+        onClick={() => navigate(order ? "/" : "/sales")}
         className="mb-4 flex cursor-pointer items-center gap-1.5 text-sm font-medium text-steel-500 hover:text-steel-800 dark:text-steel-400 dark:hover:text-amber-400"
       >
         <ArrowLeft className="size-4" aria-hidden="true" />
@@ -104,11 +154,11 @@ export default function SaleCreate() {
       </button>
 
       <h1 className="mb-6 font-display text-xl font-bold text-steel-900 dark:text-steel-50">
-        New sale
+        {order ? `Bill for ${order.orderNumber}` : "New sale"}
       </h1>
 
       <Formik
-        initialValues={initialValues}
+        initialValues={formInitialValues}
         validate={zodToFormikValidate(createSaleSchema)}
         onSubmit={handleSubmit}
       >
@@ -240,14 +290,16 @@ export default function SaleCreate() {
                   <p className="font-body text-xs font-semibold uppercase tracking-wider text-steel-600 dark:text-steel-400">
                     Items
                   </p>
-                  <Button
-                    type="button"
-                    variant="secondary"
-                    onClick={addItem}
-                    icon={<Plus className="size-4" aria-hidden="true" />}
-                  >
-                    Add item
-                  </Button>
+                  {!order && (
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      onClick={addItem}
+                      icon={<Plus className="size-4" aria-hidden="true" />}
+                    >
+                      Add item
+                    </Button>
+                  )}
                 </div>
 
                 {itemsError && (
@@ -265,7 +317,14 @@ export default function SaleCreate() {
                       error={itemErrors[index]}
                       onChange={updateItem}
                       onRemove={removeItem}
-                      canRemove={values.items.length > 1}
+                      canRemove={!order && values.items.length > 1}
+                      allowProductChange={!order}
+                      maxQuantity={
+                        billingOrder?.status === "APPROVED"
+                          ? billingOrder.items[index]?.approvedQuantity
+                          : billingOrder?.items[index]?.requestedQuantity
+                      }
+                      quantityDisabled={billingOrder?.status === "APPROVED"}
                     />
                   ))}
                 </div>
@@ -311,7 +370,7 @@ export default function SaleCreate() {
                 <Button
                   type="button"
                   variant="secondary"
-                  onClick={() => navigate("/sales")}
+                  onClick={() => navigate(order ? "/" : "/sales")}
                 >
                   Cancel
                 </Button>
@@ -320,7 +379,7 @@ export default function SaleCreate() {
                   isLoading={isSubmitting}
                   icon={<Save className="size-4" aria-hidden="true" />}
                 >
-                  Create sale
+                  {order ? "Accept order and create bill" : "Create sale"}
                 </Button>
               </div>
             </Form>

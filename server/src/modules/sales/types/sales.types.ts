@@ -11,6 +11,7 @@ export interface ISaleItem {
 }
 
 export interface ISale {
+  orderId?: Types.ObjectId;
   saleNumber: string;
   invoiceNumber: string;
   saleDate: Date;

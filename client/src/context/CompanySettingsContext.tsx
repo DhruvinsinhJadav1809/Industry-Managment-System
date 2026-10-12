@@ -10,6 +10,7 @@ import {
 import { useAuth } from "./AuthContext";
 import { settingsService } from "../services/settingsService";
 import type { CompanySettings } from "../types/settings";
+import { ROLES } from "../constants/roles";
 
 interface CompanySettingsContextValue {
   settings: CompanySettings | null;
@@ -23,13 +24,15 @@ const CompanySettingsContext = createContext<
 >(undefined);
 
 export function CompanySettingsProvider({ children }: { children: ReactNode }) {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
+  const shouldLoadSettings = isAuthenticated && user?.roleId !== ROLES.CUSTOMER;
   const [settings, setSettingsState] = useState<CompanySettings | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
   const fetchSettings = useCallback(() => {
-    if (!isAuthenticated) {
+    if (!shouldLoadSettings) {
       setSettingsState(null);
+      setIsLoading(false);
       return;
     }
     setIsLoading(true);
@@ -42,7 +45,7 @@ export function CompanySettingsProvider({ children }: { children: ReactNode }) {
         setSettingsState(null);
       })
       .finally(() => setIsLoading(false));
-  }, [isAuthenticated]);
+  }, [shouldLoadSettings]);
 
   useEffect(() => {
     fetchSettings();

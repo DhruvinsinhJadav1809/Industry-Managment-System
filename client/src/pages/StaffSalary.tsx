@@ -1,12 +1,25 @@
-import { CalendarDays, Download, Plus, Wallet } from "lucide-react";
+import { ArrowLeft, CalendarDays, Download, Plus, Wallet } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Cell,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
 import { Alert, Button, Select } from "../components/common";
 import { StaffExpenseModal } from "../components/staff/StaffExpenseModal";
 import {
   MONTH_OPTIONS,
   STAFF_EXPENSE_TYPE_LABELS,
   monthName,
+  monthNameShort,
 } from "../constants/staffledger";
 import { useToast } from "../context/ToastContext";
 import type { ApiErrorShape } from "../lib/axios";
@@ -15,6 +28,7 @@ import { staffService } from "../services/staffservice";
 import { userService } from "../services/userService";
 import type {
   StaffExpense,
+  StaffExpenseType,
   StaffLedgerRow,
   StaffSalarySummary,
 } from "../types/staff";
@@ -22,6 +36,15 @@ import ExcelJS from "exceljs";
 import { saveAs } from "file-saver";
 const DEFAULT_YEAR = new Date().getFullYear();
 const DEFAULT_MONTH = new Date().getMonth() + 1;
+const EXPENSE_TYPE_COLORS: Record<StaffExpenseType, string> = {
+  DEDUCTION: "#F87171",
+  ADVANCE: "#3B82F6",
+  MEDICAL: "#10B981",
+  MEAL: "#F59E0B",
+  TRANSPORT: "#8B5CF6",
+  MISC: "#06B6D4",
+  BONUS: "#A3A3A3",
+};
 
 function formatCurrency(value: number) {
   return new Intl.NumberFormat("en-IN", {
@@ -48,7 +71,7 @@ function formatExpenseDate(value: string) {
 export default function StaffSalary() {
   const { staffId } = useParams<{ staffId: string }>();
   const toast = useToast();
-
+  const navigate = useNavigate();
   const [selectedYear, setSelectedYear] = useState(DEFAULT_YEAR);
   const [selectedMonth, setSelectedMonth] = useState(DEFAULT_MONTH);
   const [staffName, setStaffName] = useState("Staff member");
@@ -190,6 +213,37 @@ export default function StaffSalary() {
         },
       ]
     : [];
+
+  const yearlyExpenseChartData = useMemo(
+    () =>
+      MONTH_OPTIONS.map((month) => ({
+        month: monthNameShort(month.value),
+        total:
+          ledger.find((row) => row.month === month.value)?.totalExpenses ?? 0,
+      })),
+    [ledger],
+  );
+
+  const expenseCategoryChartData = useMemo(() => {
+    const totals = new Map<StaffExpenseType, number>();
+    expenses.forEach((expense) => {
+      totals.set(
+        expense.expenseType,
+        (totals.get(expense.expenseType) ?? 0) + expense.amount,
+      );
+    });
+
+    return Array.from(totals, ([type, value]) => ({
+      type,
+      name: STAFF_EXPENSE_TYPE_LABELS[type],
+      value,
+    })).filter((item) => item.value > 0);
+  }, [expenses]);
+
+  const totalCategoryExpenses = expenseCategoryChartData.reduce(
+    (total, item) => total + item.value,
+    0,
+  );
 
   const handleExpenseSaved = async () => {
     const wasEditing = Boolean(editingExpense);
@@ -509,6 +563,14 @@ export default function StaffSalary() {
   };
   return (
     <AppLayout>
+      <button
+        type="button"
+        onClick={() => navigate("/staff")}
+        className="mb-4 flex cursor-pointer items-center gap-1.5 text-sm font-medium text-steel-500 hover:text-steel-800 dark:text-steel-400 dark:hover:text-amber-400"
+      >
+        <ArrowLeft className="size-4" aria-hidden="true" />
+        Back to Staff List
+      </button>
       <div className="space-y-6">
         <div className="flex flex-col gap-4 rounded-xl border border-steel-200 bg-white p-5 shadow-sm dark:border-steel-800 dark:bg-steel-900/80 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-3">
@@ -679,6 +741,150 @@ export default function StaffSalary() {
               </div>
             ))}
           </div>
+        </div>
+
+        <div className="grid gap-4 xl:grid-cols-2">
+          <section className="rounded-xl border border-steel-200 bg-white p-5 shadow-sm dark:border-steel-800 dark:bg-steel-900/80">
+            <h2 className="font-display text-lg font-bold text-steel-900 dark:text-steel-50">
+              Yearly Expenses
+            </h2>
+            <p className="mb-4 text-sm text-steel-500 dark:text-steel-400">
+              Monthly totals for {selectedYear}
+            </p>
+            {isLoadingLedger ? (
+              <div className="flex h-64 items-center justify-center text-sm text-steel-500">
+                Loading chart...
+              </div>
+            ) : ledger.length === 0 ? (
+              <div className="flex h-64 items-center justify-center text-sm text-steel-500">
+                No yearly expense data available.
+              </div>
+            ) : (
+              <div className="h-64 w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart
+                    data={yearlyExpenseChartData}
+                    margin={{ top: 8, right: 8, left: 0, bottom: 0 }}
+                  >
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      stroke="var(--color-steel-200)"
+                      vertical={false}
+                    />
+                    <XAxis
+                      dataKey="month"
+                      tick={{ fontSize: 11, fill: "var(--color-steel-500)" }}
+                      tickLine={false}
+                      axisLine={{ stroke: "var(--color-steel-200)" }}
+                    />
+                    <YAxis
+                      tick={{ fontSize: 11, fill: "var(--color-steel-500)" }}
+                      tickLine={false}
+                      axisLine={false}
+                      width={56}
+                    />
+                    <Tooltip
+                      formatter={(value) => formatCurrency(Number(value))}
+                      contentStyle={{ borderRadius: 6, borderColor: "#d5dce5" }}
+                    />
+                    <Bar
+                      dataKey="total"
+                      name="Expenses"
+                      fill="var(--color-amber-400)"
+                      radius={[4, 4, 0, 0]}
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            )}
+          </section>
+
+          <section className="rounded-xl border border-steel-200 bg-white p-5 shadow-sm dark:border-steel-800 dark:bg-steel-900/80">
+            <h2 className="font-display text-lg font-bold text-steel-900 dark:text-steel-50">
+              Expenses by Category
+            </h2>
+            <p className="mb-4 text-sm text-steel-500 dark:text-steel-400">
+              {monthName(selectedMonth)} {selectedYear}
+            </p>
+            {isLoadingExpenses ? (
+              <div className="flex h-64 items-center justify-center text-sm text-steel-500">
+                Loading chart...
+              </div>
+            ) : expenseCategoryChartData.length === 0 ? (
+              <div className="flex h-64 items-center justify-center text-sm text-steel-500">
+                No expense data for this month.
+              </div>
+            ) : (
+              <div>
+                <div className="relative h-52 w-full">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={expenseCategoryChartData}
+                        dataKey="value"
+                        nameKey="name"
+                        cx="50%"
+                        cy="45%"
+                        innerRadius="42%"
+                        outerRadius="68%"
+                        paddingAngle={2}
+                      >
+                        {expenseCategoryChartData.map((entry) => (
+                          <Cell
+                            key={entry.type}
+                            fill={EXPENSE_TYPE_COLORS[entry.type]}
+                          />
+                        ))}
+                      </Pie>
+                      <Tooltip
+                        formatter={(value) => formatCurrency(Number(value))}
+                        contentStyle={{
+                          borderRadius: 6,
+                          borderColor: "#d5dce5",
+                        }}
+                      />
+                    </PieChart>
+                  </ResponsiveContainer>
+                  <div className="pointer-events-none absolute left-1/2 top-[45%] flex -translate-x-1/2 -translate-y-1/2 flex-col items-center text-center">
+                    <span className="font-mono text-[9px] uppercase tracking-wider text-steel-500 dark:text-steel-400">
+                      Total
+                    </span>
+                    <span className="whitespace-nowrap text-[11px] font-bold text-steel-900 dark:text-steel-50">
+                      {formatCurrency(totalCategoryExpenses)}
+                    </span>
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 gap-x-4 gap-y-2 sm:grid-cols-2">
+                  {expenseCategoryChartData.map((item) => (
+                    <div
+                      key={item.type}
+                      className="flex min-w-0 items-center justify-between gap-2 text-xs"
+                    >
+                      <div className="flex min-w-0 items-center gap-2">
+                        <span
+                          className="size-2.5 shrink-0 rounded-sm"
+                          style={{
+                            backgroundColor: EXPENSE_TYPE_COLORS[item.type],
+                          }}
+                          aria-hidden="true"
+                        />
+                        <span className="truncate text-steel-600 dark:text-steel-300">
+                          {item.name}
+                        </span>
+                      </div>
+                      <span className="shrink-0 font-medium text-steel-900 dark:text-steel-100">
+                        {formatCurrency(item.value)} ·{" "}
+                        {((item.value / totalCategoryExpenses) * 100).toFixed(
+                          1,
+                        )}
+                        %
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </section>
         </div>
 
         <div className="rounded-xl border border-steel-200 bg-white p-5 shadow-sm dark:border-steel-800 dark:bg-steel-900/80">

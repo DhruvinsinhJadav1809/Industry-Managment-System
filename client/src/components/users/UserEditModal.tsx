@@ -3,7 +3,7 @@ import { Mail, Save, User } from "lucide-react";
 import { useState } from "react";
 import { Alert, Button, Modal, TextField } from "../common";
 import { Select } from "../common/Select";
-import { ROLE_OPTIONS } from "../../constants/roles";
+import { ROLE_OPTIONS, ROLES } from "../../constants/roles";
 import {
   updateUserSchema,
   type UpdateUserFormValues,
@@ -24,12 +24,14 @@ export function UserEditModal({ user, onClose, onSaved }: UserEditModalProps) {
 
   if (!user) return null;
 
+  const isCustomer = user.roleId === ROLES.CUSTOMER;
+
   const initialValues: UpdateUserFormValues = {
     fullName: user.fullName,
     email: user.email,
     roleId: user.roleId,
     isActive: user.isActive,
-    monthlySalary: user.monthlySalary ?? 0,
+    monthlySalary: isCustomer ? undefined : (user.monthlySalary ?? 0),
   };
 
   const handleSubmit = async (
@@ -38,7 +40,11 @@ export function UserEditModal({ user, onClose, onSaved }: UserEditModalProps) {
   ) => {
     setApiError(null);
     try {
-      await userService.update(user.id, values);
+      const payload = isCustomer
+        ? { ...values, monthlySalary: undefined }
+        : values;
+
+      await userService.update(user.id, payload);
       onSaved();
     } catch (err) {
       setApiError((err as ApiErrorShape).message);
@@ -81,19 +87,38 @@ export function UserEditModal({ user, onClose, onSaved }: UserEditModalProps) {
               label="Role"
               value={values.roleId}
               onChange={(e) => setFieldValue("roleId", Number(e.target.value))}
+              disabled
               options={ROLE_OPTIONS.map((r) => ({
                 value: r.id,
                 label: r.label,
               }))}
             />
+            <p className="-mt-1 text-xs text-steel-500 dark:text-steel-400">
+              Role changes are temporarily disabled while permissions are being
+              finalized.
+            </p>
 
-            <TextField
-              name="monthlySalary"
-              type="number"
-              min="0"
-              step="0.01"
-              label="Monthly salary"
-            />
+            {!isCustomer ? (
+              <TextField
+                name="monthlySalary"
+                type="number"
+                min="0"
+                step="0.01"
+                label="Monthly salary"
+              />
+            ) : (
+              <div className="rounded-md border border-dashed border-steel-200 bg-steel-50 p-3 dark:border-steel-700 dark:bg-steel-900/50">
+                <p className="font-body text-xs font-semibold uppercase tracking-wider text-steel-500 dark:text-steel-400">
+                  Monthly salary
+                </p>
+                <p className="mt-1 text-base font-semibold text-steel-800 dark:text-steel-100">
+                  N/A
+                </p>
+                <p className="mt-1 text-xs text-steel-500 dark:text-steel-400">
+                  Customer accounts do not use a monthly salary.
+                </p>
+              </div>
+            )}
 
             <label className="flex items-center gap-2.5 pt-1 text-sm text-steel-700 dark:text-steel-300">
               <input

@@ -62,6 +62,11 @@ const userSchema = new Schema<IUser>(
       type: Date,
       default: null,
     },
+    refreshTokenHash: {
+      type: String,
+      default: null,
+      select: false,
+    },
     createdBy: {
       type: Schema.Types.ObjectId,
       ref: "User",

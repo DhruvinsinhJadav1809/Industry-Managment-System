@@ -4,7 +4,12 @@ import { LoginRequestDto } from "../dto/request/login-request.dto";
 import { LoginResponseDto } from "../dto/response/login-response.dto";
 import UserModel from "../../users/schemas/user.schema";
 import { toUserResponseDto } from "../../../shared/mappers/user.mapper";
-import { generateToken } from "../../../shared/helpers/jwt.helper";
+import {
+  generateAccessToken,
+  generateRefreshToken,
+  REFRESH_TOKEN_COOKIE_MAX_AGE,
+  verifyRefreshToken,
+} from "../../../shared/helpers/jwt.helper";
 import { ForgotPasswordDto } from "../types/forgot-password.dto";
 import {
   generateSecureToken,
@@ -18,7 +23,9 @@ import { BCRYPT_SALT_ROUNDS } from "../../users/constants/user.constants";
 
 export const login = async (
   data: LoginRequestDto,
-): Promise<LoginResponseDto> => {
+): Promise<
+  LoginResponseDto & { refreshToken: string; refreshTokenMaxAge: number }
+> => {
   const user = await UserModel.findOne({
     email: data.email.toLowerCase(),
     isDeleted: false,
@@ -30,11 +37,64 @@ export const login = async (
   if (!isPasswordValid) {
     throw new UnauthorizedError("Invalid email or password.");
   }
-  const accessToken = generateToken(user._id.toString());
+  const accessToken = generateAccessToken(user._id.toString());
+  const refreshToken = generateRefreshToken(user._id.toString());
+  user.refreshTokenHash = hashToken(refreshToken);
+  await user.save();
   return {
     user: toUserResponseDto(user),
-    accessToken: accessToken,
+    accessToken,
+    refreshToken,
+    refreshTokenMaxAge: REFRESH_TOKEN_COOKIE_MAX_AGE,
   };
+};
+
+export const refresh = async (
+  token: string,
+): Promise<{
+  accessToken: string;
+  refreshToken: string;
+  refreshTokenMaxAge: number;
+}> => {
+  let payload;
+  try {
+    payload = verifyRefreshToken(token);
+  } catch {
+    throw new UnauthorizedError("Invalid or expired refresh token.");
+  }
+
+  const user = await UserModel.findOne({
+    _id: payload.userId,
+    isDeleted: false,
+  }).select("+refreshTokenHash");
+
+  if (!user || user.refreshTokenHash !== hashToken(token)) {
+    throw new UnauthorizedError("Invalid or expired refresh token.");
+  }
+
+  const refreshTokenMaxAge = Math.max(0, payload.exp! * 1000 - Date.now());
+  const accessToken = generateAccessToken(user._id.toString());
+  const refreshToken = generateRefreshToken(user._id.toString(), payload.exp);
+  user.refreshTokenHash = hashToken(refreshToken);
+  await user.save();
+
+  return { accessToken, refreshToken, refreshTokenMaxAge };
+};
+
+export const logout = async (token?: string): Promise<void> => {
+  if (!token) {
+    return;
+  }
+
+  try {
+    const payload = verifyRefreshToken(token);
+    await UserModel.updateOne(
+      { _id: payload.userId, refreshTokenHash: hashToken(token) },
+      { $set: { refreshTokenHash: null } },
+    );
+  } catch {
+    // Invalid or expired cookies are still cleared by the controller.
+  }
 };
 
 export const forgotPassword = async (
@@ -91,6 +151,7 @@ export const resetPassword = async (data: ResetPasswordDto): Promise<void> => {
 
   user.resetPasswordToken = null;
   user.resetPasswordExpiresAt = null;
+  user.refreshTokenHash = null;
 
   await user.save();
 };

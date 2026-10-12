@@ -26,7 +26,7 @@ Backend API for the **Industry Management System (IMS)** built with **Node.js**,
 
 # 📁 Project Structure
 
-```text
+````text
 src
 ├── config/
 │
@@ -78,7 +78,8 @@ MONGODB_URI=
 CLIENT_URL=
 
 JWT_SECRET=
-JWT_EXPIRES_IN=
+JWT_EXPIRES_IN=15m
+JWT_REFRESH_EXPIRES_IN=7d
 
 BCRYPT_SALT_ROUNDS=10
 
@@ -87,6 +88,8 @@ MAIL_PORT=
 MAIL_USER=
 MAIL_PASSWORD=
 MAIL_FROM=
+
+Access tokens expire after `JWT_EXPIRES_IN`. Refresh tokens expire after `JWT_REFRESH_EXPIRES_IN`, are rotated via `POST /api/auth/refresh`, and are sent as an HttpOnly cookie. Browser requests to the API must include credentials.
 📚 API Documentation
 
 Swagger documentation is available at:
@@ -360,12 +363,62 @@ GET	/api/purchases/:id	Get Purchase
 PUT	/api/purchases/:id	Update Purchase
 DELETE	/api/purchases/:id	Soft Delete Purchase
 GET	/api/purchases/:id/pdf	Download Purchase PDF
-Settings
+Orders
 Method	Endpoint	Description
-POST	/api/settings	Create Settings
-GET	/api/settings	Get Settings
-PUT	/api/settings	Update Settings
-POST	/api/settings/logo	Upload Company Logo
+GET	/api/orders	Get paginated orders (customers see their own; admins see all)
+POST	/api/orders	Create customer order
+PATCH	/api/orders/:id	Modify or cancel pending customer order
+PATCH	/api/orders/:id/accept	Approve order quantities as admin
+
+`GET /api/orders` accepts `page`, `pageSize` (maximum 100), `search` (order number), `status` (`PENDING`, `APPROVED`, or `CANCELLED`), `sortBy` (`createdAt`, `orderNumber`, or `status`), and `sortOrder` (`asc` or `desc`). Defaults are page 1, 10 results, newest first.
+
+Example: `GET /api/orders?page=1&pageSize=10&status=PENDING`
+
+```json
+{
+      "success": true,
+      "message": "Request completed successfully.",
+      "data": {
+            "items": [
+                  {
+                        "_id": "66b200000000000000000001",
+                        "orderNumber": "ORD000001",
+                        "customerId": {
+                              "_id": "66a100000000000000000010",
+                              "fullName": "Alex Customer",
+                              "email": "alex@example.com"
+                        },
+                        "status": "PENDING",
+                        "items": [
+                              {
+                                    "productId": {
+                                          "_id": "66a100000000000000000001",
+                                          "name": "Sample Product",
+                                          "sku": "SKU-001",
+                                          "productCode": "PRD-001"
+                                    },
+                                    "requestedQuantity": 3,
+                                    "approvedQuantity": 0,
+                                    "unitPrice": 25
+                              }
+                        ]
+                  }
+            ],
+            "page": 1,
+            "pageSize": 10,
+            "totalRecords": 1,
+            "totalPages": 1
+      },
+      "errors": null
+}
+````
+
+Settings
+Method Endpoint Description
+POST /api/settings Create Settings
+GET /api/settings Get Settings
+PUT /api/settings Update Settings
+POST /api/settings/logo Upload Company Logo
 🔔 Real-Time Socket Events
 Client → Server
 join
@@ -409,78 +462,78 @@ MongoDB/Mongoose Error Handling
 Example:
 
 {
-  "success": false,
-  "message": "Validation failed",
-  "errors": [
-    {
-      "field": "email",
-      "message": "Invalid email address"
-    }
-  ]
+"success": false,
+"message": "Validation failed",
+"errors": [
+{
+"field": "email",
+"message": "Invalid email address"
+}
+]
 }
 🏗️ Architecture
 HTTP Request
-      │
-      ▼
+│
+▼
 Routes
-      │
-      ▼
+│
+▼
 Rate Limiting
-      │
-      ▼
+│
+▼
 Validation Middleware
-      │
-      ▼
+│
+▼
 Authentication
-      │
-      ▼
+│
+▼
 Authorization
-      │
-      ▼
+│
+▼
 Controller
-      │
-      ▼
+│
+▼
 Service
-      │
-      ▼
+│
+▼
 Database
-      │
-      ▼
+│
+▼
 Mapper / DTO
-      │
-      ▼
+│
+▼
 Response Helper
-      │
-      ▼
+│
+▼
 HTTP Response
 🔄 Purchase Business Flow
 Create Purchase
-       │
-       ▼
+│
+▼
 Validate Request
-       │
-       ▼
+│
+▼
 Validate Supplier
-       │
-       ▼
+│
+▼
 Validate Products
-       │
-       ▼
+│
+▼
 Calculate Purchase Amount
-       │
-       ▼
+│
+▼
 Calculate GST
-       │
-       ▼
+│
+▼
 Create Purchase
-       │
-       ▼
+│
+▼
 Update Inventory
-       │
-       ▼
+│
+▼
 Generate Notification
-       │
-       ▼
+│
+▼
 Return Response
 📊 Dashboard
 
@@ -496,10 +549,10 @@ The financial dashboard is designed around the Indian financial year:
 
 April 1 → March 31
 📦 Available Scripts
-Command	Description
-npm run dev	Development Server
-npm run build	Build Application
-npm start	Production Server
+Command Description
+npm run dev Development Server
+npm run build Build Application
+npm start Production Server
 👨‍💻 Development Guidelines
 Follow the existing modular architecture.
 Keep business logic inside services.
@@ -522,4 +575,7 @@ Avoid duplicating business logic across modules.
 Keep APIs backward-compatible when possible.
 Add validation before database operations.
 Use appropriate indexes for frequently queried fields.
+
+```
+
 ```

@@ -4,5 +4,6 @@ export enum NotificationType {
   LOW_STOCK = "LOW_STOCK",
   USER = "USER",
   DEPARTMENT = "DEPARTMENT",
+  ORDER = "ORDER",
   SYSTEM = "SYSTEM",
 }

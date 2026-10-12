@@ -36,13 +36,17 @@ export const getSalesById = asyncHandler(
   },
 );
 export const downloadSalePdf = asyncHandler(async (req, res) => {
-  const sales = await saleService.getSalesById(String(req.params.id));
+  const sales = await saleService.getSalePdfById(
+    String(req.params.id),
+    req.user!.id,
+    req.user!.roleId,
+  );
 
   res.setHeader("Content-Type", "application/pdf");
 
   res.setHeader(
     "Content-Disposition",
-    `attachment; filename=${sales.customerName}.pdf`,
+    `attachment; filename=${sales.invoiceNumber}.pdf`,
   );
 
   generateSalePdf(sales, res);

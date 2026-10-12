@@ -12,6 +12,7 @@ import {
 } from "recharts";
 import { clsx } from "clsx";
 import { Alert } from "../common";
+import { DashboardSection } from "./DashboardSection";
 import { financialSummaryService } from "../../services/financialSummaryService";
 import type { ApiErrorShape } from "../../lib/axios";
 import type { FinancialSummary } from "../../types/financialSummary";
@@ -105,16 +106,26 @@ export function FinancialSummaryPanel() {
 
   if (isLoading) {
     return (
-      <div className="corner-frame rounded-lg border border-steel-200 bg-white/70 p-6 dark:border-steel-800 dark:bg-steel-900/40">
+      <DashboardSection
+        title="Financial summary"
+        description="Purchases, sales, and tax overview"
+      >
         <div className="flex h-40 items-center justify-center text-sm text-steel-400 dark:text-steel-500">
           Loading financial summary…
         </div>
-      </div>
+      </DashboardSection>
     );
   }
 
   if (loadError) {
-    return <Alert variant="error">{loadError}</Alert>;
+    return (
+      <DashboardSection
+        title="Financial summary"
+        description="Purchases, sales, and tax overview"
+      >
+        <Alert variant="error">{loadError}</Alert>
+      </DashboardSection>
+    );
   }
 
   if (!summary) return null;
@@ -134,21 +145,15 @@ export function FinancialSummaryPanel() {
   ];
 
   return (
-    <div className="corner-frame rounded-lg border border-steel-200 bg-white/70 p-6 dark:border-steel-800 dark:bg-steel-900/40">
-      <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h2 className="font-display text-base font-bold text-steel-900 dark:text-steel-50">
-            Financial summary
-          </h2>
-          <p className="text-xs text-steel-500 dark:text-steel-400">
-            Purchases, sales, and tax overview
-          </p>
-        </div>
+    <DashboardSection
+      title="Financial summary"
+      description="Purchases, sales, and tax overview"
+      trailing={
         <span className="rounded-full bg-steel-100 px-3 py-1 font-mono text-[11px] font-medium uppercase tracking-wide text-steel-600 dark:bg-steel-800 dark:text-steel-300">
           FY {summary.financialYear}
         </span>
-      </div>
-
+      }
+    >
       <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
         <StatCard
           label="Purchases"
@@ -217,6 +222,6 @@ export function FinancialSummaryPanel() {
           </BarChart>
         </ResponsiveContainer>
       </div>
-    </div>
+    </DashboardSection>
   );
 }

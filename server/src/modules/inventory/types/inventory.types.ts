@@ -4,6 +4,7 @@ import { IProductDocument } from "../../products/types/product.types";
 export interface IInventory {
   productId: Types.ObjectId;
   quantity: number;
+  reservedQuantity: number;
   minimumStock: number;
   maximumStock?: number | null;
   location?: string;

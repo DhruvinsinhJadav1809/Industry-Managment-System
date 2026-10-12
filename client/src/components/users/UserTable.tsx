@@ -29,7 +29,11 @@ interface UserTableProps {
   currentUserId?: string;
 }
 
-function formatCurrency(amount: number | null | undefined) {
+function formatCurrency(amount: number | null | undefined, roleId?: number) {
+  if (roleId === ROLES.CUSTOMER) {
+    return "N/A";
+  }
+
   if (typeof amount !== "number" || Number.isNaN(amount)) {
     return "—";
   }
@@ -142,7 +146,7 @@ export function UserTable({
                   {user.email}
                 </td>
                 <td className="px-4 py-3.5 font-medium text-steel-800 dark:text-steel-100">
-                  {formatCurrency(user.monthlySalary)}
+                  {formatCurrency(user.monthlySalary, user.roleId)}
                 </td>
                 <td className="px-4 py-3.5">
                   <Badge tone={roleTone(user.roleId)}>

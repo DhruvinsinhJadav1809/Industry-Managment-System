@@ -12,7 +12,7 @@ const router = Router();
 router.get(
   "/",
   authenticate,
-  authorize([UserRole.Admin, UserRole.Employee]),
+  authorize([UserRole.Admin, UserRole.Employee, UserRole.Customer]),
   validateRequest(getInventoryQuerySchema, "query"),
   inventoryController.getInventories,
 );

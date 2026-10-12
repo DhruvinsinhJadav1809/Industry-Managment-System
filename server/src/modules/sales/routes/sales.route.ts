@@ -47,5 +47,11 @@ router.get(
   validateRequest(userIdParamsSchema, "params"),
   saleController.getSalesById,
 );
-router.get("/:id/pdf", authenticate, saleController.downloadSalePdf);
+router.get(
+  "/:id/pdf",
+  authenticate,
+  authorize([UserRole.Admin, UserRole.Employee, UserRole.Customer]),
+  validateRequest(userIdParamsSchema, "params"),
+  saleController.downloadSalePdf,
+);
 export default router;

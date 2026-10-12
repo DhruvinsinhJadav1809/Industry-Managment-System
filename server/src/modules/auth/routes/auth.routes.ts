@@ -8,6 +8,8 @@ import { loginRateLimiter } from "../../../middleware/rate-limit.middleware";
 
 const router = Router();
 
+router.post("/refresh", authController.refresh);
+router.post("/logout", authController.logout);
 router.post(
   "/login",
   loginRateLimiter,

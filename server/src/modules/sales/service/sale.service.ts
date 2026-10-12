@@ -4,6 +4,8 @@ import { ProductModel } from "../../products/schemas/product.model";
 import { NotFoundError } from "../../../shared/errors/not-found.error";
 import { InventoryModel } from "../../inventory/schemas/inventory.model";
 import { BadRequestError } from "../../../shared/errors/bad-request.error";
+import { ConflictError } from "../../../shared/errors/conflict.error";
+import { ForbiddenError } from "../../../shared/errors/forbidden.error";
 import { SaleModel } from "../schema/sales.schema";
 import { getNextSequence } from "../../../shared/counter/service/counter.service";
 import UserModel from "../../users/schemas/user.schema";
@@ -15,6 +17,8 @@ import { ISale } from "../types/sales.types";
 import { UpdateSalePaymentDto } from "../validation/sale.validation";
 import { Response as ExpressResponse } from "express";
 import { ExcelService } from "../../../shared/excel/excel.service";
+import { OrderStatus } from "../../orders/constants/order-status.enum";
+import { OrderModel } from "../../orders/schemas/order.schema";
 interface SaleItem {
   productId: mongoose.Types.ObjectId;
   productName: string;
@@ -67,50 +71,96 @@ export const createSale = async (dto: CreateSaleDto, currentUserId: string) => {
       throw new NotFoundError("One or more products not found or inactive.");
     }
 
-    /**
-     * Load Inventory
-     */
-    const inventories = await InventoryModel.find(
-      {
-        productId: {
-          $in: productIds,
-        },
-        isDeleted: false,
-      },
-      null,
-      {
-        session,
-      },
-    ).lean();
+    const linkedOrder = dto.orderId
+      ? await OrderModel.findOne({
+          _id: dto.orderId,
+          isDeleted: false,
+        }).session(session)
+      : null;
 
-    /**
-     * Validate Inventory
-     */
-    for (const item of dto.items) {
-      const inventory = inventories.find(
-        (inventory) => inventory.productId.toString() === item.productId,
-      );
+    if (dto.orderId && !linkedOrder) {
+      throw new NotFoundError("Order not found.");
+    }
 
-      if (!inventory) {
-        const product = products.find(
-          (product) => product._id.toString() === item.productId,
-        );
-
-        throw new NotFoundError(
-          `Inventory not found for product ${product?.name ?? item.productId}.`,
+    if (linkedOrder) {
+      if (
+        linkedOrder.status !== OrderStatus.Pending &&
+        linkedOrder.status !== OrderStatus.Approved
+      ) {
+        throw new ConflictError(
+          "Only pending or approved orders can be billed.",
         );
       }
 
-      if (inventory.quantity < item.quantity) {
-        const product = products.find(
-          (product) => product._id.toString() === item.productId,
+      const billableItems = linkedOrder.items.filter((item) =>
+        linkedOrder.status === OrderStatus.Pending
+          ? item.requestedQuantity > 0
+          : item.approvedQuantity > 0,
+      );
+      if (
+        billableItems.length !== dto.items.length ||
+        billableItems.some((orderItem) => {
+          const saleItem = dto.items.find(
+            (item) => item.productId === orderItem.productId.toString(),
+          );
+          const billableQuantity =
+            linkedOrder.status === OrderStatus.Pending
+              ? orderItem.requestedQuantity
+              : orderItem.approvedQuantity;
+          return saleItem?.quantity !== billableQuantity;
+        })
+      ) {
+        throw new BadRequestError(
+          "Bill quantities must match the order quantities.",
+        );
+      }
+    }
+
+    const inventories =
+      linkedOrder?.status === OrderStatus.Approved
+        ? []
+        : await InventoryModel.find(
+            {
+              productId: { $in: productIds },
+              isDeleted: false,
+            },
+            null,
+            { session },
+          ).lean();
+
+    if (!linkedOrder || linkedOrder.status === OrderStatus.Pending) {
+      for (const item of dto.items) {
+        const inventory = inventories.find(
+          (inventory) => inventory.productId.toString() === item.productId,
         );
 
-        throw new BadRequestError(
-          `Insufficient stock for ${
-            product?.name ?? item.productId
-          }. Available: ${inventory.quantity}, Requested: ${item.quantity}.`,
-        );
+        if (!inventory) {
+          const product = products.find(
+            (product) => product._id.toString() === item.productId,
+          );
+
+          throw new NotFoundError(
+            `Inventory not found for product ${product?.name ?? item.productId}.`,
+          );
+        }
+
+        const isReservedOrderItem =
+          linkedOrder?.stockReserved === true &&
+          linkedOrder.status === OrderStatus.Pending;
+        const availableQuantity = isReservedOrderItem
+          ? Math.min(inventory.quantity, inventory.reservedQuantity ?? 0)
+          : inventory.quantity - (inventory.reservedQuantity ?? 0);
+        if (availableQuantity < item.quantity) {
+          const product = products.find(
+            (product) => product._id.toString() === item.productId,
+          );
+
+          throw new BadRequestError(
+            `Insufficient stock for ${
+              product?.name ?? item.productId
+            }. Available: ${availableQuantity}, Requested: ${item.quantity}.`,
+          );
+        }
       }
     }
 
@@ -193,6 +243,7 @@ export const createSale = async (dto: CreateSaleDto, currentUserId: string) => {
         {
           saleNumber,
           invoiceNumber,
+          ...(linkedOrder ? { orderId: linkedOrder._id } : {}),
 
           customerName: dto.customerName,
           customerPhone: dto.customerPhone,
@@ -233,52 +284,110 @@ export const createSale = async (dto: CreateSaleDto, currentUserId: string) => {
      */
     const currentUserObjectId = new mongoose.Types.ObjectId(currentUserId);
 
-    const inventoryOperations = dto.items.map((item) => ({
-      updateOne: {
-        filter: {
-          productId: new mongoose.Types.ObjectId(item.productId),
-
+    if (linkedOrder) {
+      const claimedOrder = await OrderModel.findOneAndUpdate(
+        {
+          _id: linkedOrder._id,
+          status: linkedOrder.status,
           isDeleted: false,
-
-          quantity: {
-            $gte: item.quantity,
-          },
+          $or: [{ saleId: { $exists: false } }, { saleId: null }],
         },
-
-        update: {
-          $inc: {
-            quantity: -item.quantity,
-          },
-
+        {
           $set: {
+            status: OrderStatus.Billed,
+            saleId: sale._id,
+            stockReserved: false,
             updatedBy: currentUserObjectId,
           },
         },
-      },
-    }));
-
-    /**
-     * Execute Inventory Updates
-     */
-    const inventoryResult = await InventoryModel.bulkWrite(
-      inventoryOperations,
-      {
-        session,
-      },
-    );
-    console.log("Inventory result:", {
-      matchedCount: inventoryResult.matchedCount,
-      modifiedCount: inventoryResult.modifiedCount,
-    });
-
-    console.log("Requested items:", dto.items);
-    /**
-     * Verify Inventory Updates
-     */
-    if (inventoryResult.modifiedCount !== dto.items.length) {
-      throw new BadRequestError(
-        "Stock changed while processing the sale. Please try again.",
+        { new: true, session },
       );
+      if (!claimedOrder) {
+        throw new ConflictError(
+          "This order has already been billed or changed. Refresh and retry.",
+        );
+      }
+
+      if (linkedOrder.status === OrderStatus.Pending) {
+        const inventoryOperations = dto.items.map((item) => ({
+          updateOne: {
+            filter: {
+              productId: new mongoose.Types.ObjectId(item.productId),
+              isDeleted: false,
+              quantity: { $gte: item.quantity },
+              ...(linkedOrder.stockReserved
+                ? { reservedQuantity: { $gte: item.quantity } }
+                : {
+                    $expr: {
+                      $gte: [
+                        {
+                          $subtract: [
+                            "$quantity",
+                            { $ifNull: ["$reservedQuantity", 0] },
+                          ],
+                        },
+                        item.quantity,
+                      ],
+                    },
+                  }),
+            },
+            update: {
+              $inc: {
+                quantity: -item.quantity,
+                ...(linkedOrder.stockReserved
+                  ? { reservedQuantity: -item.quantity }
+                  : {}),
+              },
+              $set: { updatedBy: currentUserObjectId },
+            },
+          },
+        }));
+
+        const inventoryResult = await InventoryModel.bulkWrite(
+          inventoryOperations,
+          { session },
+        );
+        if (inventoryResult.modifiedCount !== dto.items.length) {
+          throw new ConflictError(
+            "The order reservation changed while creating the bill. Refresh and retry.",
+          );
+        }
+      }
+    } else {
+      const inventoryOperations = dto.items.map((item) => ({
+        updateOne: {
+          filter: {
+            productId: new mongoose.Types.ObjectId(item.productId),
+            isDeleted: false,
+            quantity: { $gte: item.quantity },
+            $expr: {
+              $gte: [
+                {
+                  $subtract: [
+                    "$quantity",
+                    { $ifNull: ["$reservedQuantity", 0] },
+                  ],
+                },
+                item.quantity,
+              ],
+            },
+          },
+          update: {
+            $inc: { quantity: -item.quantity },
+            $set: { updatedBy: currentUserObjectId },
+          },
+        },
+      }));
+
+      const inventoryResult = await InventoryModel.bulkWrite(
+        inventoryOperations,
+        { session },
+      );
+      if (inventoryResult.modifiedCount !== dto.items.length) {
+        throw new BadRequestError(
+          "Stock changed while processing the sale. Please try again.",
+        );
+      }
     }
 
     /**
@@ -343,6 +452,12 @@ export const createSale = async (dto: CreateSaleDto, currentUserId: string) => {
       await session.abortTransaction();
     }
 
+    if (isTransactionConflict(error)) {
+      throw new ConflictError(
+        "Inventory changed while processing the sale. Refresh stock and retry.",
+      );
+    }
+
     throw error;
   } finally {
     /**
@@ -350,6 +465,19 @@ export const createSale = async (dto: CreateSaleDto, currentUserId: string) => {
      */
     await session.endSession();
   }
+};
+
+const isTransactionConflict = (error: unknown): boolean => {
+  if (typeof error !== "object" || error === null) return false;
+  const mongoError = error as {
+    code?: number;
+    hasErrorLabel?: (label: string) => boolean;
+  };
+  return (
+    mongoError.code === 112 ||
+    mongoError.code === 251 ||
+    mongoError.hasErrorLabel?.("TransientTransactionError") === true
+  );
 };
 
 /**
@@ -553,4 +681,32 @@ export const getSalesById = async (id: string) => {
   return {
     ...sales,
   };
+};
+
+export const getSalePdfById = async (
+  id: string,
+  currentUserId: string,
+  roleId: number,
+) => {
+  const sale = await getSalesById(id);
+
+  if (roleId === UserRole.Customer) {
+    if (!sale.orderId) {
+      throw new ForbiddenError("This bill is not available to this customer.");
+    }
+
+    const customerOrder = await OrderModel.exists({
+      _id: sale.orderId,
+      saleId: sale._id,
+      customerId: new mongoose.Types.ObjectId(currentUserId),
+      status: OrderStatus.Billed,
+      isDeleted: false,
+    });
+
+    if (!customerOrder) {
+      throw new ForbiddenError("This bill is not available to this customer.");
+    }
+  }
+
+  return sale;
 };

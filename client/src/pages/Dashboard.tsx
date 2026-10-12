@@ -6,6 +6,8 @@ import { InventoryPanel } from "../components/dashboard/InventoryPanel";
 import { PurchaseTrendChart } from "../components/dashboard/PurchaseTrendChart";
 import { FinancialSummaryPanel } from "../components/dashboard/Financialsummarypanel";
 import { ProductProfitabilityChart } from "../components/dashboard/Productprofitabilitychart";
+import { PendingOrdersPanel } from "../components/dashboard/PendingOrdersPanel";
+import { OrderSummaryPanel } from "../components/dashboard/OrderSummaryPanel";
 export default function Dashboard() {
   const { user } = useAuth();
 
@@ -16,6 +18,12 @@ export default function Dashboard() {
       </h1>
 
       <div className="flex flex-col gap-6">
+        {user?.roleId === ROLES.ADMIN && (
+          <>
+            <PendingOrdersPanel />
+            <OrderSummaryPanel />
+          </>
+        )}
         {/* Purchases are admin-only elsewhere in the app, so only show this
             chart to admins — everyone else would just hit a 403. */}
         {user?.roleId === ROLES.ADMIN && (
@@ -27,14 +35,18 @@ export default function Dashboard() {
           </>
         )}
 
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-          <div className="lg:col-span-1">
-            <LowStockPanel />
+        {user?.roleId === ROLES.CUSTOMER ? (
+          <InventoryPanel />
+        ) : (
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+            <div className="lg:col-span-1">
+              <LowStockPanel />
+            </div>
+            <div className="lg:col-span-2">
+              <InventoryPanel />
+            </div>
           </div>
-          <div className="lg:col-span-2">
-            <InventoryPanel />
-          </div>
-        </div>
+        )}
       </div>
     </AppLayout>
   );

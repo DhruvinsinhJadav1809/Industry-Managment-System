@@ -10,7 +10,8 @@ import {
 import { io, type Socket } from "socket.io-client";
 import { useAuth } from "./AuthContext";
 import { useToast } from "./ToastContext";
-import { ROLES } from "../constants/roles";
+import { notificationService } from "../services/notificationService";
+import type { NotificationHistoryItem } from "../types/notification";
 
 export interface AppNotification {
   id: string;
@@ -24,13 +25,13 @@ export interface AppNotification {
 }
 
 interface IncomingNotificationPayload {
+  _id?: string;
   title: string;
   message: string;
   type: string;
-  recipients: string[];
   metadata?: Record<string, unknown>;
   actionUrl?: string;
-  createdBy: string;
+  createdAt?: string;
 }
 
 interface NotificationContextValue {
@@ -57,45 +58,94 @@ const MAX_STORED = 50;
 export function NotificationProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
   const toast = useToast();
+  const toastRef = useRef(toast);
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
   const socketRef = useRef<Socket | null>(null);
 
-  // Real-time notifications are Staff-only for now.
-  const isStaff = user?.roleId === ROLES.STAFF;
+  useEffect(() => {
+    toastRef.current = toast;
+  }, [toast]);
+
+  const canReceiveNotifications = Boolean(user);
 
   useEffect(() => {
-    if (!isStaff || !user) {
+    if (!canReceiveNotifications || !user) {
       socketRef.current?.disconnect();
       socketRef.current = null;
       setNotifications([]);
       return;
     }
 
+    let isActive = true;
+    void notificationService
+      .list(MAX_STORED)
+      .then((items: NotificationHistoryItem[]) => {
+        if (!isActive) return;
+        const savedNotifications = items.map((item) => ({
+          id: item.id,
+          title: item.title,
+          message: item.message,
+          type: item.type,
+          metadata: item.metadata,
+          actionUrl: item.actionUrl,
+          createdAt: item.createdAt,
+          read: item.isRead,
+        }));
+        setNotifications((current) => {
+          const merged = new Map<string, AppNotification>(
+            savedNotifications.map((notification) => [
+              notification.id,
+              notification,
+            ]),
+          );
+          current.forEach((notification) =>
+            merged.set(notification.id, notification),
+          );
+          return [...merged.values()]
+            .sort(
+              (left, right) =>
+                new Date(right.createdAt).getTime() -
+                new Date(left.createdAt).getTime(),
+            )
+            .slice(0, MAX_STORED);
+        });
+      })
+      .catch(() => undefined);
+
     const socket = io(SOCKET_URL, { transports: ["websocket"] });
     socketRef.current = socket;
 
-    socket.emit("join", user.id);
+    socket.on("connect", () => {
+      socket.emit("join", user.id);
+    });
 
     socket.on("notification", (data: IncomingNotificationPayload) => {
       const notification: AppNotification = {
-        id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+        id:
+          data._id ?? `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
         title: data.title,
         message: data.message,
         type: data.type,
         metadata: data.metadata,
         actionUrl: data.actionUrl,
-        createdAt: new Date().toISOString(),
+        createdAt: data.createdAt ?? new Date().toISOString(),
         read: false,
       };
-      setNotifications((prev) => [notification, ...prev].slice(0, MAX_STORED));
-      toast.info(data.title);
+      setNotifications((prev) =>
+        [
+          notification,
+          ...prev.filter((existing) => existing.id !== notification.id),
+        ].slice(0, MAX_STORED),
+      );
+      toastRef.current.info(data.title);
     });
 
     return () => {
+      isActive = false;
       socket.disconnect();
       socketRef.current = null;
     };
-  }, [isStaff, user, toast]);
+  }, [canReceiveNotifications, user]);
 
   const markAsRead = (id: string) => {
     setNotifications((prev) =>

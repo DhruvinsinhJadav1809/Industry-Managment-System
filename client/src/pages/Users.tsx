@@ -46,7 +46,7 @@ export default function Users() {
       sortBy,
       sortOrder,
     }),
-    [page, debouncedSearch, roleId, sortBy, sortOrder]
+    [page, debouncedSearch, roleId, sortBy, sortOrder],
   );
 
   const fetchUsers = async () => {
@@ -100,7 +100,7 @@ export default function Users() {
 
   return (
     <AppLayout>
-      <div className="mb-6 flex items-center gap-3">
+      <div className="mb-2 flex items-center gap-3">
         <div className="flex size-10 items-center justify-center rounded-md bg-steel-800 text-steel-50 dark:bg-amber-400 dark:text-steel-950">
           <UsersIcon className="size-5" aria-hidden="true" />
         </div>
@@ -109,10 +109,17 @@ export default function Users() {
             User management
           </h1>
           <p className="text-sm text-steel-500 dark:text-steel-400">
-            {totalRecords} account{totalRecords === 1 ? "" : "s"} across the network
+            {totalRecords} account{totalRecords === 1 ? "" : "s"} across the
+            network
           </p>
         </div>
       </div>
+      <p className="text-sm text-steel-500 dark:text-steel-400 mb-4">
+        <strong>Salary Management:</strong> Salary should be applicable only to
+        staff users. Customer users should not have salary information. Each
+        staff member should have a salary configuration that can be used for
+        salary calculations and monthly salary/payroll processing.
+      </p>
 
       <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-end">
         <div className="flex-1">

@@ -63,6 +63,13 @@ const saleSchema = new Schema(
       unique: true,
     },
 
+    orderId: {
+      type: Schema.Types.ObjectId,
+      ref: "Order",
+      unique: true,
+      sparse: true,
+    },
+
     saleDate: {
       type: Date,
       required: true,

@@ -19,6 +19,8 @@ import helmet from "helmet";
 import { apiRateLimiter } from "./middleware/rate-limit.middleware";
 import expenseRoutes from "./modules/expense/routes/expense.route";
 import staffRoutes from "./modules/staff/route/staff.route";
+import notificationRoutes from "./modules/notification/routes/notification.route";
+import orderRoutes from "./modules/orders/routes/order.route";
 
 const app = express();
 app.use(helmet());
@@ -51,6 +53,8 @@ app.use("/api/sales", salesRoutes);
 app.use("/api/chat", chatRoutes);
 app.use("/api/expenses", expenseRoutes);
 app.use("/api/staff", staffRoutes);
+app.use("/api/notifications", notificationRoutes);
+app.use("/api/orders", orderRoutes);
 app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 // Error Middleware (Always Last)
 app.use(errorMiddleware);

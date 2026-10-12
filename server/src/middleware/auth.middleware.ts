@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { UnauthorizedError } from "../shared/errors/unauthorized.error";
-import { verifyToken } from "../shared/helpers/jwt.helper";
+import { verifyAccessToken } from "../shared/helpers/jwt.helper";
 import UserModel from "../modules/users/schemas/user.schema";
 
 export const authenticate = async (
@@ -20,7 +20,7 @@ export const authenticate = async (
 
   const token = authHeader.split(" ")[1];
 
-  const payload = verifyToken(token);
+  const payload = verifyAccessToken(token);
 
   const user = await UserModel.findOne({
     _id: payload.userId,
