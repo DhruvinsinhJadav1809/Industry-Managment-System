@@ -29,6 +29,9 @@ import Staffs from "./pages/Staffs";
 import StaffSalary from "./pages/StaffSalary";
 import CreateNotification from "./pages/CreateNotification";
 import Orders from "./pages/Orders";
+import StaffRooms from "./pages/StaffRooms";
+import StaffAttendance from "./pages/StaffAttendance";
+import MyAttendance from "./pages/MyAttendance";
 export default function App() {
   return (
     <ErrorBoundary>
@@ -188,6 +191,36 @@ export default function App() {
                       <ProtectedRoute>
                         <RequireRole allow={[ROLES.ADMIN]}>
                           <Staffs />
+                        </RequireRole>
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/staff/rooms"
+                    element={
+                      <ProtectedRoute>
+                        <RequireRole allow={[ROLES.ADMIN]}>
+                          <StaffRooms />
+                        </RequireRole>
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/staff/attendance"
+                    element={
+                      <ProtectedRoute>
+                        <RequireRole allow={[ROLES.ADMIN]}>
+                          <StaffAttendance />
+                        </RequireRole>
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/my-attendance"
+                    element={
+                      <ProtectedRoute>
+                        <RequireRole allow={[ROLES.STAFF]}>
+                          <MyAttendance />
                         </RequireRole>
                       </ProtectedRoute>
                     }

@@ -8,6 +8,7 @@ import { FinancialSummaryPanel } from "../components/dashboard/Financialsummaryp
 import { ProductProfitabilityChart } from "../components/dashboard/Productprofitabilitychart";
 import { PendingOrdersPanel } from "../components/dashboard/PendingOrdersPanel";
 import { OrderSummaryPanel } from "../components/dashboard/OrderSummaryPanel";
+import { StaffDailyAttendance } from "../components/dashboard/StaffDailyAttendance";
 export default function Dashboard() {
   const { user } = useAuth();
 
@@ -20,6 +21,7 @@ export default function Dashboard() {
       <div className="flex flex-col gap-6">
         {user?.roleId === ROLES.ADMIN && (
           <>
+            <StaffDailyAttendance />
             <PendingOrdersPanel />
             <OrderSummaryPanel />
           </>

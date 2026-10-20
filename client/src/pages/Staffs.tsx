@@ -1,4 +1,4 @@
-import { ArrowRight, Users } from "lucide-react";
+import { ArrowRight, BedDouble, CalendarDays, Users } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Alert, Button } from "../components/common";
@@ -51,6 +51,26 @@ export default function Staffs() {
                 Staff list
               </h1>
             </div>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Link to="/staff/attendance">
+              <Button
+                type="button"
+                variant="secondary"
+                icon={<CalendarDays className="size-4" aria-hidden="true" />}
+              >
+                Attendance
+              </Button>
+            </Link>
+            <Link to="/staff/rooms">
+              <Button
+                type="button"
+                variant="secondary"
+                icon={<BedDouble className="size-4" aria-hidden="true" />}
+              >
+                Manage rooms
+              </Button>
+            </Link>
           </div>
         </div>
 

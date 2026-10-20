@@ -4,12 +4,64 @@ import type {
   CreateStaffExpensePayload,
   StaffExpense,
   StaffExpenseListParams,
+  StaffAttendanceMonth,
+  StaffAttendanceRecord,
+  StaffDailyAttendanceData,
+  UpsertDailyStaffAttendancePayload,
   StaffLedgerRow,
   StaffSalarySummary,
+  UpsertStaffAttendancePayload,
   UpdateStaffExpensePayload,
 } from "../types/staff";
 
 export const staffService = {
+  getDailyAttendance: async (date: string) => {
+    const { data } = await apiClient.get<ApiResponse<StaffDailyAttendanceData>>(
+      "/staff/attendance/daily",
+      { params: { date } },
+    );
+    return data;
+  },
+
+  saveDailyAttendance: async (payload: UpsertDailyStaffAttendancePayload) => {
+    const { data } = await apiClient.put<ApiResponse<StaffDailyAttendanceData>>(
+      "/staff/attendance/daily",
+      payload,
+    );
+    return data;
+  },
+
+  getMyMonthlyAttendance: async (month: number, year: number) => {
+    const { data } = await apiClient.get<ApiResponse<StaffAttendanceMonth>>(
+      "/staff/me/attendance",
+      { params: { month, year } },
+    );
+    return data;
+  },
+
+  getMonthlyAttendance: async (
+    staffId: string,
+    month: number,
+    year: number,
+  ) => {
+    const { data } = await apiClient.get<ApiResponse<StaffAttendanceMonth>>(
+      `/staff/${staffId}/attendance`,
+      { params: { month, year } },
+    );
+    return data;
+  },
+
+  saveAttendance: async (
+    staffId: string,
+    payload: UpsertStaffAttendancePayload,
+  ) => {
+    const { data } = await apiClient.put<ApiResponse<StaffAttendanceRecord>>(
+      `/staff/${staffId}/attendance`,
+      payload,
+    );
+    return data;
+  },
+
   /** GET /staff/:staffId/summary?month=&year= */
   getStaffSalarySummary: async (
     staffId: string,

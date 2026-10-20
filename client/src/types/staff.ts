@@ -54,3 +54,64 @@ export interface StaffExpenseListParams {
   month?: number;
   year?: number;
 }
+
+export type StaffAttendanceStatus =
+  | "PRESENT"
+  | "ABSENT"
+  | "HALF_DAY"
+  | "NIGHT_SHIFT"
+  | "OVERTIME"
+  | "WEEK_OFF"
+  | "FESTIVAL_LEAVE";
+
+export interface StaffAttendanceRecord {
+  id: string;
+  staffId: string;
+  date: string;
+  status: StaffAttendanceStatus;
+  nightShift: boolean;
+  overtimeHours: number;
+}
+
+export interface StaffAttendanceSummary {
+  month: number;
+  year: number;
+  presentDays: number;
+  absentDays: number;
+  halfDays: number;
+  attendanceDays: number;
+  weekOffs: number;
+  festivalLeaves: number;
+  nightShifts: number;
+  overtimeDays: number;
+  overtimeHours: number;
+}
+
+export interface StaffAttendanceMonth {
+  records: StaffAttendanceRecord[];
+  summary: StaffAttendanceSummary;
+}
+
+export interface UpsertStaffAttendancePayload {
+  date: string;
+  status: StaffAttendanceStatus;
+  nightShift: boolean;
+  overtimeHours: number;
+}
+
+export interface StaffDailyAttendanceInput {
+  staffId: string;
+  status: StaffAttendanceStatus;
+  nightShift: boolean;
+  overtimeHours: number;
+}
+
+export interface UpsertDailyStaffAttendancePayload {
+  date: string;
+  records: StaffDailyAttendanceInput[];
+}
+
+export interface StaffDailyAttendanceData {
+  records: StaffAttendanceRecord[];
+  submitted: boolean;
+}

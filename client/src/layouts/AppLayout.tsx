@@ -13,6 +13,7 @@ import {
   IndianRupeeIcon,
   NotebookPen,
   ClipboardList,
+  CalendarDays,
 } from "lucide-react";
 import { useState, type ReactNode } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
@@ -87,6 +88,12 @@ const navItems = [
     roles: [ROLES.ADMIN],
   },
   {
+    to: "/my-attendance",
+    label: "My attendance",
+    icon: CalendarDays,
+    roles: [ROLES.STAFF],
+  },
+  {
     to: "/notifications/new",
     label: "Notifications",
     icon: BellRing,
@@ -118,6 +125,7 @@ function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
             (to === "/notifications/new" &&
               location.pathname.startsWith("/notifications")) ||
             (to === "/staff" && location.pathname.startsWith("/staff/")) ||
+            (to === "/my-attendance" && location.pathname === to) ||
             (to === "/sales" && location.pathname.startsWith("/sales/"));
           return (
             <Link
