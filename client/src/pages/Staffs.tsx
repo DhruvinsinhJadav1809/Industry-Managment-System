@@ -1,4 +1,10 @@
-import { ArrowRight, BedDouble, CalendarDays, Users } from "lucide-react";
+import {
+  ArrowRight,
+  BedDouble,
+  CalendarDays,
+  ClipboardCheck,
+  Users,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Alert, Button } from "../components/common";
@@ -53,6 +59,15 @@ export default function Staffs() {
             </div>
           </div>
           <div className="flex flex-wrap gap-2">
+            <Link to="/staff/tasks">
+              <Button
+                type="button"
+                variant="secondary"
+                icon={<ClipboardCheck className="size-4" aria-hidden="true" />}
+              >
+                Tasks & overtime
+              </Button>
+            </Link>
             <Link to="/staff/attendance">
               <Button
                 type="button"

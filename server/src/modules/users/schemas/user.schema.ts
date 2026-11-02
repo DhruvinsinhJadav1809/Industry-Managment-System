@@ -62,6 +62,14 @@ const userSchema = new Schema<IUser>(
       type: Date,
       default: null,
     },
+    activationToken: {
+      type: String,
+      default: null,
+    },
+    activationExpiresAt: {
+      type: Date,
+      default: null,
+    },
     refreshTokenHash: {
       type: String,
       default: null,

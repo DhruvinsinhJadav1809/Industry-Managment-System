@@ -27,4 +27,9 @@ router.post(
   validateRequest(resetPasswordSchema),
   authController.resetPassword,
 );
+router.post(
+  "/activate-account",
+  validateRequest(resetPasswordSchema),
+  authController.activateAccount,
+);
 export default router;

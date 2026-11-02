@@ -60,4 +60,13 @@ export const authService = {
     );
     return data;
   },
+
+  /** POST /auth/activate-account — sets an invited user's first password. */
+  activateAccount: async (payload: ResetPasswordPayload) => {
+    const { data } = await apiClient.post<ApiResponse<unknown>>(
+      "/auth/activate-account",
+      payload,
+    );
+    return data;
+  },
 };

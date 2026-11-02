@@ -38,3 +38,20 @@ export interface UpdateUserPayload {
   isActive: boolean;
   monthlySalary?: number | null;
 }
+
+export interface UserInvitationPreviewRow {
+  rowNumber: number;
+  fullName: string;
+  email: string;
+  role: string;
+  roleId: number | null;
+  roleLabel: string | null;
+  status: "valid" | "error" | "created";
+  errors: string[];
+}
+
+export interface InviteUserPayload {
+  fullName: string;
+  email: string;
+  roleId: number;
+}

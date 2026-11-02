@@ -1,52 +1,73 @@
-# IMS — Industry Management System
+# IMS Client
 
-React + TypeScript starter with Register and Login pages, ready to wire up more pages as APIs come in.
+The client is the web application for the Industry Management System, built
+with React and TypeScript. It provides role-protected screens for business and
+staff workflows and communicates with the IMS API.
 
-## Stack
-- **Vite + React + TypeScript**
-- **Tailwind CSS v4** — custom "industrial blueprint" design system (steel blues + amber accent), light/dark mode
-- **Formik + Zod** — form state + schema validation (Zod schemas adapted to Formik via a small bridge)
-- **Axios** — central API client with interceptors (auth token attach, normalized error shape)
-- **lucide-react** — icons
-- **react-router-dom** — routing
+## Technology
+
+- React 19, TypeScript, and Vite
+- Tailwind CSS 4
+- React Router
+- Axios for API requests and token refresh
+- Formik and Zod for forms and validation
+- Recharts for dashboard visualizations
+- Socket.IO client for real-time notifications
 
 ## Getting started
+
+From the `client` directory:
+
 ```bash
-cd ims-app
 npm install
 npm run dev
 ```
-App runs at `http://localhost:5173`.
 
-Set your backend URL in `.env`:
-```
+Vite serves the app at `http://localhost:5173`.
+
+Create `client/.env` with the API URL:
+
+```dotenv
 VITE_API_BASE_URL=http://localhost:5000/api
 ```
 
-## What's wired up
-- **Register page** (`/register`) -> `POST /api/users` with `{ fullName, email, password }`, matches your Postman sample exactly.
-- **Login page** (`/login`) -> calls `authService.login`, currently pointed at `POST /api/auth/login`. Update the path in `src/services/authService.ts` once you share the real endpoint, nothing else needs to change.
-- **Password policy**: min 8 characters, 1 uppercase, 1 lowercase, 1 special character, enforced by Zod and shown live via a strength meter.
-- **Dashboard** (`/`) — placeholder landing page after auth, so navigation has somewhere to go. Replace as you add real pages.
+`VITE_SOCKET_URL` is optional. When unset, the Socket.IO connection uses the
+origin derived from `VITE_API_BASE_URL`.
 
-## Project structure
-```
+## Application areas
+
+- Authentication, registration, password reset, and role-based navigation
+- Dashboard and business administration for users, departments, products,
+  suppliers, inventory, company settings, and notifications
+- Orders, purchases, sales, and expenses
+- Staff directory, attendance, rooms, salary, tasks, leave requests, and
+  employee assets
+- Staff self-service pages for attendance, tasks, leave, and assigned assets
+- API-backed chat and real-time notifications
+
+## Source layout
+
+```text
 src/
-  components/common/   # Button, TextField, PasswordField, Alert, ThemeToggle, Logo, AuthLayout
-  context/              # ThemeContext (light/dark, persisted to localStorage)
-  lib/
-    axios.ts            # API client + interceptors + error normalization
-    validations/        # Zod schemas + zod-to-formik bridge
-  services/              # authService (register/login API calls)
-  types/                 # shared TS types
-  pages/                 # Register, Login, Dashboard
+  components/   Shared UI and feature-specific components
+  constants/    Shared options and storage keys
+  context/      Authentication, settings, notifications, theme, and toast state
+  lib/          API client, helpers, and validation schemas
+  layouts/      Authenticated application layout
+  pages/        Application routes and screens
+  routes/       Authentication and role guards
+  services/     API service functions
+  types/        TypeScript domain types
 ```
 
-## Design notes
-- Favicon and in-app logo are the same hex-plate "gauge" mark — a nod to industrial control panels.
-- Light and dark mode both use the same steel/amber palette, just inverted, so contrast stays readable in both.
-- The `AuthLayout` component is shared by Register and Login (and any future auth pages) — one place to change the split-screen layout.
-- All common components (`Button`, `TextField`, `PasswordField`, `Alert`, etc.) are Formik-aware and themed, so new pages can reuse them directly.
+## Scripts
 
-## Next steps
-Send over the login endpoint contract when ready, and any additional pages (forgot password, dashboard modules, etc.) — the architecture (common components, axios client, validation pattern) is built to extend without rework.
+| Command | Description |
+| --- | --- |
+| `npm run dev` | Start the Vite development server |
+| `npm run build` | Type-check and create the production build in `dist/` |
+| `npm run preview` | Preview the production build locally |
+| `npm run lint` | Run Oxlint |
+
+The API uses cookie credentials for refresh-token requests. Configure the
+server's `CLIENT_URL` to match the client origin; see the [server README](../server/README.md).

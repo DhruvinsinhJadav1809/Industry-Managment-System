@@ -98,3 +98,11 @@ export const resetPassword = asyncHandler(async (req, res) => {
     .status(200)
     .json(successResponse(null, "Password reset successfully."));
 });
+
+export const activateAccount = asyncHandler(async (req, res) => {
+  await authService.activateAccount(req.body);
+
+  return res
+    .status(200)
+    .json(successResponse(null, "Account activated successfully."));
+});

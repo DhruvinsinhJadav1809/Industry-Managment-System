@@ -5,6 +5,7 @@ import { clsx } from "clsx";
 interface Option {
   value: string | number;
   label: string;
+  disabled?: boolean;
 }
 
 interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
@@ -56,6 +57,7 @@ export function Select({
             <option
               key={opt.value}
               value={opt.value}
+              disabled={opt.disabled}
               className="bg-white text-steel-900 dark:bg-steel-900 dark:text-steel-50"
             >
               {opt.label}

@@ -6,5 +6,6 @@ export enum NotificationType {
   DEPARTMENT = "DEPARTMENT",
   ORDER = "ORDER",
   STAFF_ROOM = "STAFF_ROOM",
+  ASSET_RELEASE = "ASSET_RELEASE",
   SYSTEM = "SYSTEM",
 }

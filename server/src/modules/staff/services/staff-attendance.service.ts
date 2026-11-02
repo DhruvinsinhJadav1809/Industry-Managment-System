@@ -18,6 +18,7 @@ import {
 import StaffAttendanceModel from "../schema/staff-attendance.schema";
 import StaffAttendanceDayModel from "../schema/staff-attendance-day.schema";
 import { IStaffAttendance } from "../types/staff-attendance.types";
+import { validateAttendanceChangeAgainstTasks } from "../tasks/staff-task.service";
 
 type AttendanceRecord = IStaffAttendance & { _id: Types.ObjectId };
 
@@ -88,6 +89,15 @@ export const upsertDailyAttendance = async (
     throw new NotFoundError("One or more staff users were not found.");
 
   const date = normalizeDate(data.date);
+  await Promise.all(
+    data.records.map((record) =>
+      validateAttendanceChangeAgainstTasks(record.staffId, date, {
+        status: record.status,
+        nightShift: record.nightShift || record.status === "NIGHT_SHIFT",
+        overtimeHours: record.overtimeHours,
+      }),
+    ),
+  );
   const existingCount = await StaffAttendanceModel.countDocuments({
     date,
     staffId: { $in: staffIds },
@@ -219,6 +229,11 @@ export const upsertAttendance = async (
       data.date.getUTCDate(),
     ),
   );
+  await validateAttendanceChangeAgainstTasks(staffId, date, {
+    status: data.status,
+    nightShift: data.nightShift || data.status === "NIGHT_SHIFT",
+    overtimeHours: data.overtimeHours,
+  });
   const filter = { staffId, date };
   const update = {
     $set: {

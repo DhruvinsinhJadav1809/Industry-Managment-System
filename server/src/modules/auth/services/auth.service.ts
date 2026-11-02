@@ -37,6 +37,9 @@ export const login = async (
   if (!isPasswordValid) {
     throw new UnauthorizedError("Invalid email or password.");
   }
+  if (!user.isActive) {
+    throw new UnauthorizedError("Invalid email or password.");
+  }
   const accessToken = generateAccessToken(user._id.toString());
   const refreshToken = generateRefreshToken(user._id.toString());
   user.refreshTokenHash = hashToken(refreshToken);
@@ -153,5 +156,28 @@ export const resetPassword = async (data: ResetPasswordDto): Promise<void> => {
   user.resetPasswordExpiresAt = null;
   user.refreshTokenHash = null;
 
+  await user.save();
+};
+
+export const activateAccount = async (
+  data: ResetPasswordDto,
+): Promise<void> => {
+  const hashedToken = hashToken(data.token);
+
+  const user = await UserModel.findOne({
+    activationToken: hashedToken,
+    activationExpiresAt: { $gt: new Date() },
+    isDeleted: false,
+  });
+
+  if (!user) {
+    throw new BadRequestError("Invalid or expired account setup link.");
+  }
+
+  user.password = await bcrypt.hash(data.password, BCRYPT_SALT_ROUNDS);
+  user.activationToken = null;
+  user.activationExpiresAt = null;
+  user.isActive = true;
+  user.refreshTokenHash = null;
   await user.save();
 };

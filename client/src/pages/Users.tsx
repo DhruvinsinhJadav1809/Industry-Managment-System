@@ -1,7 +1,8 @@
-import { Search, Users as UsersIcon } from "lucide-react";
+import { Search, UserPlus, Users as UsersIcon } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { Alert, Pagination, Select } from "../components/common";
+import { Alert, Button, Pagination, Select } from "../components/common";
 import { UserEditModal } from "../components/users/UserEditModal";
+import { UserInvitePanel } from "../components/users/UserInvitePanel";
 import { ConfirmDialog } from "../components/common/ConfirmDialog";
 import { UserTable } from "../components/users/UserTable";
 import { AppLayout } from "../layouts/AppLayout";
@@ -34,6 +35,7 @@ export default function Users() {
   const [editingUser, setEditingUser] = useState<UserListItem | null>(null);
   const [deletingUser, setDeletingUser] = useState<UserListItem | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [showInvitePanel, setShowInvitePanel] = useState(false);
 
   const debouncedSearch = useDebouncedValue(search, 350);
 
@@ -114,6 +116,26 @@ export default function Users() {
           </p>
         </div>
       </div>
+      <div className="mb-4 flex justify-end">
+        <Button
+          type="button"
+          icon={<UserPlus className="size-4" aria-hidden="true" />}
+          onClick={() => setShowInvitePanel((visible) => !visible)}
+        >
+          Add users
+        </Button>
+      </div>
+      {showInvitePanel && (
+        <UserInvitePanel
+          onClose={() => setShowInvitePanel(false)}
+          onComplete={(count) => {
+            toast.success(
+              `${count} user invitation${count === 1 ? "" : "s"} sent.`,
+            );
+            fetchUsers();
+          }}
+        />
+      )}
       <p className="text-sm text-steel-500 dark:text-steel-400 mb-4">
         <strong>Salary Management:</strong> Salary should be applicable only to
         staff users. Customer users should not have salary information. Each

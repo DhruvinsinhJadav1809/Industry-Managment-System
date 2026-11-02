@@ -1,5 +1,19 @@
 import { z } from "zod";
 
+export const inviteUserDetailsSchema = z.object({
+  fullName: z
+    .string()
+    .trim()
+    .min(3, "Name must be at least 3 characters")
+    .max(100, "Name must be 100 characters or fewer"),
+  email: z
+    .string()
+    .trim()
+    .min(1, "Email is required")
+    .max(254, "Email must be 254 characters or fewer")
+    .email("Enter a valid email address"),
+});
+
 export const updateUserSchema = z.object({
   fullName: z
     .string()

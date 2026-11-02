@@ -14,6 +14,8 @@ import {
   NotebookPen,
   ClipboardList,
   CalendarDays,
+  ClipboardCheck,
+  CalendarPlus,
 } from "lucide-react";
 import { useState, type ReactNode } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
@@ -88,9 +90,45 @@ const navItems = [
     roles: [ROLES.ADMIN],
   },
   {
+    to: "/staff/assets",
+    label: "Employee assets",
+    icon: Package,
+    roles: [ROLES.ADMIN],
+  },
+  {
+    to: "/staff/tasks",
+    label: "Tasks & overtime",
+    icon: ClipboardCheck,
+    roles: [ROLES.ADMIN],
+  },
+  {
+    to: "/staff/leaves",
+    label: "Leave requests",
+    icon: CalendarPlus,
+    roles: [ROLES.ADMIN],
+  },
+  {
+    to: "/my-tasks",
+    label: "My tasks",
+    icon: ClipboardCheck,
+    roles: [ROLES.STAFF],
+  },
+  {
     to: "/my-attendance",
     label: "My attendance",
     icon: CalendarDays,
+    roles: [ROLES.STAFF],
+  },
+  {
+    to: "/my-leaves",
+    label: "My leave",
+    icon: CalendarPlus,
+    roles: [ROLES.STAFF],
+  },
+  {
+    to: "/my-assets",
+    label: "My assets",
+    icon: Package,
     roles: [ROLES.STAFF],
   },
   {
@@ -124,9 +162,20 @@ function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
             location.pathname === to ||
             (to === "/notifications/new" &&
               location.pathname.startsWith("/notifications")) ||
-            (to === "/staff" && location.pathname.startsWith("/staff/")) ||
+            (to === "/staff" &&
+              location.pathname.startsWith("/staff/") &&
+              !location.pathname.startsWith("/staff/assets") &&
+              !location.pathname.startsWith("/staff/tasks") &&
+              !location.pathname.startsWith("/staff/leaves")) ||
             (to === "/my-attendance" && location.pathname === to) ||
+            (to === "/staff/leaves" &&
+              location.pathname.startsWith("/staff/leaves")) ||
+            (to === "/my-leaves" && location.pathname === to) ||
             (to === "/sales" && location.pathname.startsWith("/sales/"));
+          const isStaffTaskRoute =
+            (to === "/staff/tasks" &&
+              location.pathname.startsWith("/staff/tasks")) ||
+            (to === "/my-tasks" && location.pathname === "/my-tasks");
           return (
             <Link
               key={to}
@@ -134,7 +183,7 @@ function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
               onClick={onNavigate}
               className={clsx(
                 "group flex cursor-pointer items-center gap-2.5 rounded-md px-2.5 py-2 font-body text-sm font-medium transition-colors",
-                active
+                active || isStaffTaskRoute
                   ? "bg-steel-800 text-steel-50 dark:bg-amber-400 dark:text-steel-950"
                   : "text-steel-600 hover:bg-steel-100 hover:text-steel-900 dark:text-steel-300 dark:hover:bg-steel-800/60 dark:hover:text-steel-50",
               )}

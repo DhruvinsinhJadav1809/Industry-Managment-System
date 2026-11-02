@@ -32,6 +32,9 @@ import Orders from "./pages/Orders";
 import StaffRooms from "./pages/StaffRooms";
 import StaffAttendance from "./pages/StaffAttendance";
 import MyAttendance from "./pages/MyAttendance";
+import StaffTasks from "./pages/StaffTasks";
+import StaffLeaves from "./pages/StaffLeaves";
+import EmployeeAssets from "./pages/EmployeeAssets";
 export default function App() {
   return (
     <ErrorBoundary>
@@ -45,6 +48,7 @@ export default function App() {
                   <Route path="/login" element={<Login />} />
                   <Route path="/forgot-password" element={<ForgotPassword />} />
                   <Route path="/reset-password" element={<ResetPassword />} />
+                  <Route path="/set-password" element={<ResetPassword />} />
                   <Route path="/unauthorized" element={<Unauthorized />} />
 
                   <Route
@@ -196,6 +200,16 @@ export default function App() {
                     }
                   />
                   <Route
+                    path="/staff/assets"
+                    element={
+                      <ProtectedRoute>
+                        <RequireRole allow={[ROLES.ADMIN]}>
+                          <EmployeeAssets />
+                        </RequireRole>
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
                     path="/staff/rooms"
                     element={
                       <ProtectedRoute>
@@ -216,11 +230,61 @@ export default function App() {
                     }
                   />
                   <Route
+                    path="/staff/tasks"
+                    element={
+                      <ProtectedRoute>
+                        <RequireRole allow={[ROLES.ADMIN]}>
+                          <StaffTasks />
+                        </RequireRole>
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/staff/leaves"
+                    element={
+                      <ProtectedRoute>
+                        <RequireRole allow={[ROLES.ADMIN]}>
+                          <StaffLeaves />
+                        </RequireRole>
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/my-tasks"
+                    element={
+                      <ProtectedRoute>
+                        <RequireRole allow={[ROLES.STAFF]}>
+                          <StaffTasks />
+                        </RequireRole>
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
                     path="/my-attendance"
                     element={
                       <ProtectedRoute>
                         <RequireRole allow={[ROLES.STAFF]}>
                           <MyAttendance />
+                        </RequireRole>
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/my-leaves"
+                    element={
+                      <ProtectedRoute>
+                        <RequireRole allow={[ROLES.STAFF]}>
+                          <StaffLeaves />
+                        </RequireRole>
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/my-assets"
+                    element={
+                      <ProtectedRoute>
+                        <RequireRole allow={[ROLES.STAFF]}>
+                          <EmployeeAssets />
                         </RequireRole>
                       </ProtectedRoute>
                     }
